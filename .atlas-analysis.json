@@ -1,0 +1,111 @@
+{
+  "projectType": "data-platform",
+  "projectName": "Digital Planning Data Schemas",
+  "projectDescription": "JSON Schemas to describe digital planning services, applications, and more for planning authorities in England.",
+  "theme": "sequoia",
+  "primaryColor": "#2B5797",
+  "lightColor": "#4A90E2",
+  "darkColor": "#1A3A5F",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/overview",
+              "concepts/schema-types",
+              "concepts/validation"
+            ]
+          },
+          {
+            "group": "Schemas",
+            "pages": [
+              "schemas/application",
+              "schemas/pre-application",
+              "schemas/post-submission-application",
+              "schemas/post-submission-published-application",
+              "schemas/prototype-application",
+              "schemas/enforcement"
+            ]
+          },
+          {
+            "group": "Usage Guide",
+            "pages": [
+              "usage/integration",
+              "usage/validation",
+              "usage/typescript-types",
+              "usage/examples"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "API Implementation",
+            "pages": [
+              "api/overview",
+              "api/response-structure",
+              "api/pagination",
+              "api/filtering",
+              "api/endpoints"
+            ]
+          },
+          {
+            "group": "Type Reference",
+            "pages": [
+              "reference/application-types",
+              "reference/shared-types",
+              "reference/enums"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Additional Resources",
+            "pages": [
+              "resources/changelog",
+              "resources/contributing",
+              "resources/examples"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "JSON Schema specifications for digital planning applications in England",
+    "TypeScript type definitions generated from schemas",
+    "Validation support via JSON Schema, AJV, and jsonschema libraries",
+    "Multiple application types: planning permission, prior approval, lawful development certificates, enforcement, and more",
+    "OpenAPI specification for API implementations",
+    "Comprehensive example payloads for all application types",
+    "API implementation guidelines with pagination, filtering, and search patterns"
+  ],
+  "publicApiSurface": [
+    "Application schema - Main planning application specification",
+    "PreApplication schema - Pre-application advice submissions",
+    "PostSubmissionApplication schema - Applications after submission with validation data",
+    "PostSubmissionPublishedApplication schema - Public-facing published applications",
+    "PrototypeApplication schema - Prototype/experimental applications",
+    "Enforcement schema - Planning enforcement reports",
+    "ApplicationTypes - 80+ planning application type enums",
+    "Shared types: User, Property, Proposal, Applicant, Metadata, Responses, Constraints, Materials, Fees",
+    "Validation utilities for AJV and jsonschema libraries",
+    "npm package exports: types/*, schemas/*, examples/*"
+  ]
+}
