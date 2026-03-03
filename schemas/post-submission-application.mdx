@@ -1,0 +1,383 @@
+---
+title: "PostSubmissionApplication"
+description: "The root specification for a planning application in England after it has been through a digital planning service and into a back office system"
+---
+
+## Overview
+
+The PostSubmissionApplication schema extends the core application data model to track the full lifecycle of a planning application after it enters a back office planning system. This schema captures the submission, validation, consultation, assessment, and appeal stages, along with comments from the public and specialist consultees.
+
+## Schema Structure
+
+PostSubmissionApplication is a discriminated union type that varies based on the `applicationType`. The generic structure includes:
+
+<ResponseField name="applicationType" type="ApplicationType" required>
+  The specific type of application (e.g., "pp.full.householder", "ldc.proposed", "pa.part1.classA")
+</ResponseField>
+
+<ResponseField name="data" type="object" required>
+  Extended application data tracking the application through the planning process
+  
+  <Expandable title="properties">
+    <ResponseField name="application" type="Application" required>
+      Core application information including reference number, current stage, and status
+      
+      <Expandable title="properties">
+        <ResponseField name="reference" type="string" required>
+          The local planning authority's reference number for this application
+        </ResponseField>
+        
+        <ResponseField name="stage" type="ProcessStage" required>
+          Current stage in the planning process (submission, validation, consultation, assessment, appeal)
+        </ResponseField>
+        
+        <ResponseField name="status" type="ApplicationStatus" required>
+          Current status (undetermined, granted, refused, withdrawn, etc.)
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="localPlanningAuthority" type="LocalPlanningAuthority" required>
+      Information about the local planning authority processing the application
+      
+      <Expandable title="properties">
+        <ResponseField name="name" type="string">
+          Name of the local planning authority
+        </ResponseField>
+        
+        <ResponseField name="code" type="string">
+          Official code for the authority
+        </ResponseField>
+        
+        <ResponseField name="publicCommentsAcceptedUntilDecision" type="boolean">
+          Whether public comments are accepted throughout the process
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="submission" type="Submission" required>
+      Details about when and how the application was submitted
+      
+      <Expandable title="properties">
+        <ResponseField name="submittedAt" type="string" required>
+          ISO 8601 datetime of submission
+        </ResponseField>
+        
+        <ResponseField name="submittedVia" type="string">
+          Channel used for submission (e.g., "PlanX", "Planning Portal")
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="validation" type="Validation">
+      Validation stage information (if the application has reached this stage)
+      
+      <Expandable title="properties">
+        <ResponseField name="validatedAt" type="string">
+          ISO 8601 datetime when application was validated
+        </ResponseField>
+        
+        <ResponseField name="valid" type="boolean" required>
+          Whether the application was deemed valid
+        </ResponseField>
+        
+        <ResponseField name="invalidReason" type="string">
+          Explanation if application was invalid
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="consultation" type="Consultation">
+      Consultation period details (if applicable for this application type)
+      
+      <Expandable title="properties">
+        <ResponseField name="startDate" type="string">
+          ISO 8601 datetime when consultation period began
+        </ResponseField>
+        
+        <ResponseField name="endDate" type="string">
+          ISO 8601 datetime when consultation period ends
+        </ResponseField>
+        
+        <ResponseField name="publicNoticePublishedAt" type="string">
+          When the public notice was published
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="assessment" type="Assessment">
+      Assessment and decision information
+      
+      <Expandable title="properties">
+        <ResponseField name="determinedAt" type="string">
+          ISO 8601 datetime of the decision
+        </ResponseField>
+        
+        <ResponseField name="decision" type="AssessmentDecision" required>
+          The decision made (granted, refused, withdrawn, etc.)
+        </ResponseField>
+        
+        <ResponseField name="decisionNotice" type="object">
+          Details of the formal decision notice
+        </ResponseField>
+        
+        <ResponseField name="conditions" type="array">
+          Planning conditions attached to a granted permission
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="appeal" type="Appeal">
+      Appeal information if the decision was appealed
+      
+      <Expandable title="properties">
+        <ResponseField name="lodgedAt" type="string">
+          ISO 8601 datetime when appeal was lodged
+        </ResponseField>
+        
+        <ResponseField name="decision" type="AppealDecision">
+          The Planning Inspectorate's decision (allowed, dismissed, split)
+        </ResponseField>
+        
+        <ResponseField name="decidedAt" type="string">
+          ISO 8601 datetime of appeal decision
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="caseOfficer" type="CaseOfficer" required>
+      The planning officer handling the application
+      
+      <Expandable title="properties">
+        <ResponseField name="name" type="string" required>
+          Name of the case officer
+        </ResponseField>
+        
+        <ResponseField name="email" type="string">
+          Contact email
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="comments" type="object">
+  Comments received during the application process
+  
+  <Expandable title="properties">
+    <ResponseField name="public" type="PublicComments">
+      Array of comments from members of the public
+      
+      <Expandable title="properties">
+        <ResponseField name="id" type="string" required>
+          Unique identifier for the comment
+        </ResponseField>
+        
+        <ResponseField name="createdAt" type="string" required>
+          When the comment was submitted
+        </ResponseField>
+        
+        <ResponseField name="sentiment" type="CommentSentiment">
+          Whether the comment supports or objects to the application
+        </ResponseField>
+        
+        <ResponseField name="summary" type="string">
+          Brief summary of the comment
+        </ResponseField>
+        
+        <ResponseField name="text" type="string" required>
+          Full text of the comment
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="specialist" type="SpecialistComments">
+      Array of comments from specialist consultees (e.g., highways, conservation officer)
+      
+      <Expandable title="properties">
+        <ResponseField name="consultee" type="string" required>
+          Name of the consultee organization or department
+        </ResponseField>
+        
+        <ResponseField name="recommendation" type="string">
+          The consultee's recommendation
+        </ResponseField>
+        
+        <ResponseField name="comments" type="string">
+          Detailed comments from the consultee
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="files" type="PostSubmissionFile[]">
+  Files associated with the application, including those uploaded during submission and added later
+  
+  <Expandable title="properties">
+    <ResponseField name="association" type="FileAssociation" required>
+      What stage or aspect the file relates to (submission, validation, consultation, assessment, appeal)
+    </ResponseField>
+    
+    <ResponseField name="uploadedAt" type="string" required>
+      When the file was uploaded
+    </ResponseField>
+    
+    <ResponseField name="name" type="string" required>
+      File name
+    </ResponseField>
+    
+    <ResponseField name="type" type="string[]" required>
+      Classified file types
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="submission" type="PrototypeApplication" required>
+  The original application data as submitted through the digital planning service
+</ResponseField>
+
+<ResponseField name="metadata" type="PostSubmissionMetadata" required>
+  Extended metadata tracking the application through the system
+  
+  <Expandable title="properties">
+    <ResponseField name="organisation" type="string" required>
+      Local planning authority code
+    </ResponseField>
+    
+    <ResponseField name="id" type="string" required>
+      Unique identifier for this application
+    </ResponseField>
+    
+    <ResponseField name="submittedAt" type="string" required>
+      Original submission datetime
+    </ResponseField>
+    
+    <ResponseField name="generatedAt" type="string" required>
+      When this payload was generated
+    </ResponseField>
+    
+    <ResponseField name="schema" type="string" required>
+      JSON schema URL
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Application Lifecycle Stages
+
+The PostSubmissionApplication tracks applications through these stages:
+
+### 1. Submission
+- Application received by the local planning authority
+- Initial triage and allocation to case officer
+
+### 2. Validation
+- Case officer checks application is valid and complete
+- May request additional information
+- Application is validated or invalidated
+
+### 3. Consultation
+- Public consultation period (typically 21 days)
+- Specialist consultees are consulted
+- Comments and representations received
+
+### 4. Assessment
+- Case officer assesses application against planning policies
+- Recommendation made
+- Decision issued (granted, refused, or withdrawn)
+
+### 5. Appeal (if applicable)
+- Appellant lodges appeal with Planning Inspectorate
+- Appeal process conducted
+- Inspector's decision issued
+
+## Example Payload
+
+Here's an example of a Lawful Development Certificate application in the submission stage:
+
+```json
+{
+  "applicationType": "ldc.proposed",
+  "data": {
+    "application": {
+      "reference": "ABC-123-XYZ",
+      "stage": "submission",
+      "status": "undetermined"
+    },
+    "localPlanningAuthority": {
+      "name": "London Borough of Hackney",
+      "code": "LBH",
+      "publicCommentsAcceptedUntilDecision": true
+    },
+    "submission": {
+      "submittedAt": "2024-03-01T09:00:00.000Z",
+      "submittedVia": "PlanX"
+    },
+    "caseOfficer": {
+      "name": "Casey Officer",
+      "email": "casey.officer@hackney.gov.uk"
+    }
+  },
+  "files": [
+    {
+      "association": "submission",
+      "uploadedAt": "2024-03-01T09:00:00.000Z",
+      "name": "proposed-plans.pdf",
+      "type": ["sitePlan.proposed"]
+    }
+  ],
+  "submission": {
+    "applicationType": "ldc.proposed",
+    "data": { /* Original PrototypeApplication data */ }
+  },
+  "metadata": {
+    "organisation": "LBH",
+    "id": "faae04cd-0ec2-479e-b7fb-14b3e7acae35",
+    "submittedAt": "2024-03-01T09:00:00.000Z",
+    "generatedAt": "2024-03-01T09:01:00.000Z",
+    "schema": "https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/postSubmissionApplication.json"
+  }
+}
+```
+
+## Supported Application Types
+
+PostSubmissionApplication supports all application types defined in the ApplicationType enum, including:
+
+- All Planning Permission types (pp.*)
+- All Prior Approval types (pa.*)
+- All Lawful Development Certificate types (ldc.*)
+- Listed Building Consent
+- Advertisement Consent
+- Works to Trees
+- And many more
+
+Each type uses the same base structure with type-specific variations in the data fields.
+
+## JSON Schema
+
+The complete JSON Schema definition is available at:
+
+```
+https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/postSubmissionApplication.json
+```
+
+<Warning>
+  This schema contains sensitive information including personal data. Ensure appropriate data protection measures are in place when storing or transmitting PostSubmissionApplication data.
+</Warning>
+
+## Related Schemas
+
+<CardGroup cols={2}>
+  <Card title="PrototypeApplication" href="/schemas/prototype-application">
+    The original application schema
+  </Card>
+  
+  <Card title="PostSubmissionPublishedApplication" href="/schemas/post-submission-published-application">
+    Redacted version for public access
+  </Card>
+  
+  <Card title="Application" href="/schemas/application">
+    Base application schema
+  </Card>
+</CardGroup>

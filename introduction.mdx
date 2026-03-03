@@ -1,0 +1,139 @@
+---
+title: Introduction
+description: Digital Planning Data schemas provide JSON Schema specifications for planning applications, enforcement notices, and related planning data in England
+---
+
+<img
+  className="block dark:hidden"
+  src="/images/hero-light.png"
+  alt="Digital Planning Data Schemas"
+/>
+<img
+  className="hidden dark:block"
+  src="/images/hero-dark.png"
+  alt="Digital Planning Data Schemas"
+/>
+
+## Overview
+
+Digital Planning Data schemas contain data specifications developed by [Open Digital Planning](https://opendigitalplanning.org/) to describe Digital Planning services. Each specification is communicated via a [JSON Schema](https://json-schema.org/) document.
+
+Our initial specification defines data structures, rules, and validation logic for **planning applications** - including Lawful Development Certificate, Prior Approval, and Planning Permission services - that are being designed and submitted via [PlanX](https://www.planx.uk/).
+
+Digital Planning Data schemas aim to encourage more interoperability and consistency between systems by offering a central, version controlled specification for documenting and validating planning data.
+
+## What's Included
+
+The schemas currently support the following application types:
+
+- **Planning Permission** (Full Householder, Major, Minor)
+- **Prior Approval** (Larger Extension, Build Homes, Convert Commercial to Home, Extend University, Solar Panels)
+- **Lawful Development Certificate** (Proposed, Existing)
+- **Listed Building Consent**
+- **Land Drainage Consent**
+- **Hedgerow Removal Notice**
+- **Advert Consent**
+- **Enforcement** notices
+
+<CardGroup cols={2}>
+  <Card
+    title="Quick Start"
+    icon="rocket"
+    href="/quickstart"
+  >
+    Get started with Digital Planning Data schemas in minutes
+  </Card>
+  <Card
+    title="Installation"
+    icon="download"
+    href="/installation"
+  >
+    Learn how to install and integrate the schemas into your project
+  </Card>
+  <Card
+    title="API Implementation"
+    icon="code"
+    href="/api/overview"
+  >
+    Guidelines for implementing the schema in your API
+  </Card>
+  <Card
+    title="Examples"
+    icon="file-code"
+    href="/usage/examples"
+  >
+    Browse real-world examples of valid planning application payloads
+  </Card>
+</CardGroup>
+
+## Repository Structure
+
+The Digital Planning Data schemas repository is organized as follows:
+
+<AccordionGroup>
+  <Accordion title="/schemas" icon="folder">
+    The main JSON Schema files. The `main` branch reflects the `@next` version, while historic versions are documented and released on the `dist` branch.
+    
+    Current schemas:
+    - `application.json`
+    - `prototypeApplication.json`
+    - `preApplication.json`
+    - `postSubmissionApplication.json`
+    - `postSubmissionPublishedApplication.json`
+    - `enforcement.json`
+  </Accordion>
+
+  <Accordion title="/types" icon="folder">
+    TypeScript interfaces used to generate the JSON Schemas. The schemas are built using `ts-json-schema-generator` from these TypeScript type definitions.
+  </Accordion>
+
+  <Accordion title="/examples" icon="folder">
+    Examples of valid payloads for each application type supported by the specifications. Each example demonstrates real-world usage patterns.
+  </Accordion>
+
+  <Accordion title="/tests" icon="folder">
+    Test suites using both `jsonschema` and `ajv` libraries to ensure that the generated schemas and example payloads are valid, accurate, and capable of handling different scenarios.
+  </Accordion>
+</AccordionGroup>
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Type Safety" icon="shield-check">
+    Generated from TypeScript interfaces for strong type safety and validation
+  </Card>
+  <Card title="Version Control" icon="code-branch">
+    Centralized, version-controlled specifications hosted via GitHub Pages
+  </Card>
+  <Card title="Standards-Based" icon="book">
+    Built on JSON Schema standard with comprehensive validation rules
+  </Card>
+  <Card title="Interoperable" icon="arrows-rotate">
+    Designed to promote consistency and interoperability between planning systems
+  </Card>
+</CardGroup>
+
+## Future Roadmap
+
+Going forward, we hope that this repository will expand beyond applications to further describe:
+
+- Planning reference numbers
+- Site notices
+- Consultations
+- Additional planning data types
+
+## License
+
+Distributed under the **Mozilla Public License Version 2.0**. See `LICENSE.txt` for more information.
+
+## Contributing
+
+We welcome feedback, bug reports, and contributions to help improve and grow the Digital Planning Data schemas via GitHub Issues and Pull Requests.
+
+<Card
+  title="View on GitHub"
+  icon="github"
+  href="https://github.com/theopensystemslab/digital-planning-data-schemas"
+>
+  Contribute to the Digital Planning Data schemas project
+</Card>

@@ -1,0 +1,102 @@
+---
+title: Contributing
+description: How to contribute to the Digital Planning Data schemas project
+---
+
+We welcome feedback, bug reports, and contributions to help improve and grow the Digital Planning Data schemas via GitHub Issues and Pull Requests.
+
+## Development Setup
+
+The JSON Schemas are defined using TypeScript interfaces and then generated using the `ts-json-schema-generator` library.
+
+### Prerequisites
+
+Assuming [PNPM](https://pnpm.io/) is available globally:
+
+```bash
+pnpm i
+```
+
+### Making Changes
+
+To make changes to the schemas:
+
+1. Update files in `/types`
+2. Run `pnpm build` to automatically generate the output JSON file under `/schemas`
+
+<Note>
+  Types should be annotated using JSDocs, which will then be read during schema generation.
+</Note>
+
+For more information on annotations, see the [JSON schema docs](https://json-schema.org/understanding-json-schema/reference/) for a full list of references for various types.
+
+## Repository Structure
+
+The repository is organized as follows:
+
+<AccordionGroup>
+  <Accordion title="/examples">
+    Examples of valid payloads for each application type supported by the specifications encoded in this repository.
+  </Accordion>
+  
+  <Accordion title="/schemas">
+    The main JSON Schema files. The `main` branch of this repo will reflect the `@next` version, while historic versions are documented and released on the `dist` branch.
+  </Accordion>
+  
+  <Accordion title="/types">
+    TypeScript interfaces used to generate the JSON Schemas.
+  </Accordion>
+  
+  <Accordion title="/tests">
+    Test suites to ensure that the generated schema and example payloads are valid, accurate, and capable of handling different scenarios.
+  </Accordion>
+</AccordionGroup>
+
+## Adding Examples and Testing
+
+### Creating Examples
+
+1. Add a TypeScript file to `/examples/<SCHEMA>/data` with at least one exported variable representing an example payload definition
+2. Run `pnpm build-json-examples` to automatically generate a corresponding JSON file per example payload in the root of `/examples`
+3. Run `pnpm test` to confirm your example payload can be successfully validated against the Digital Planning Data schema
+
+### Testing
+
+Run the test suite to validate your changes:
+
+```bash
+pnpm test
+```
+
+## Publishing
+
+To publish a new version:
+
+1. Open a pull request against `main` which increments the `package.json` version
+2. On merge, the [publish.yml](https://github.com/theopensystemslab/digital-planning-data-schemas/blob/main/.github/workflows/publish.yml) GitHub Action will:
+   - Update the `dist` branch
+   - Create a release
+   - Publish the new version via GitHub pages at:
+     ```
+     http://theopensystemslab.github.io/digital-planning-data-schemas/<VERSION>/schemas/<SCHEMA>.json
+     ```
+
+## API Implementation
+
+For guidance on implementing the schema in an API, please refer to the [API implementation guidelines](https://github.com/theopensystemslab/digital-planning-data-schemas/blob/main/IMPLEMENTATION.md).
+
+<Info>
+  One of the aims of this specification is to make data interopable between systems. The schema allows us to do this with the structure but the implementation of API's will also need to have standard implementations in order for applications to use the data efficiently.
+</Info>
+
+## Getting Help
+
+If you have questions or need assistance:
+
+- Open an [issue on GitHub](https://github.com/theopensystemslab/digital-planning-data-schemas/issues)
+- Check the [existing discussions](https://github.com/theopensystemslab/digital-planning-data-schemas/discussions)
+- Review the [API reference documentation](/api-reference)
+
+## License
+
+Distributed under the Mozilla Public License Version 2.0. See [LICENSE.txt](https://github.com/theopensystemslab/digital-planning-data-schemas/blob/main/LICENSE) for more information.

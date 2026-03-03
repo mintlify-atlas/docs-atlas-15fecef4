@@ -1,0 +1,361 @@
+---
+title: Filtering and Search
+description: AND/OR filtering, date ranges, and location-based search
+---
+
+## Overview
+
+The API supports multiple filtering mechanisms:
+
+- **Filter-based searching:** AND/OR logic for multi-value filters
+- **Date-based searching:** Date ranges with various formats
+- **Location-based searching:** Geographic queries (single point and polygons)
+- **Text searching:** Full-text search across multiple fields
+
+## Filter-Based Searching
+
+Some endpoints support `AND` and `OR` filtering. The syntax used determines the outcome.
+
+### OR Logic (Comma-Separated)
+
+Use comma-separated values for OR logic:
+
+```bash
+GET /items?options=option1,option2
+```
+
+**SQL Equivalent:**
+```sql
+SELECT * FROM items WHERE option1 = true OR option2 = true;
+```
+
+**Result:** Items that have `option1` OR `option2` OR both set to true will be returned.
+
+### AND Logic (Repeated Parameters)
+
+Repeat the parameter for AND logic:
+
+```bash
+GET /items?options=option1&options=option2
+```
+
+**SQL Equivalent:**
+```sql
+SELECT * FROM items WHERE option1 = true AND option2 = true;
+```
+
+**Result:** Only items that have both `option1` AND `option2` set to true will be returned.
+
+### Combining AND and OR
+
+You can combine both approaches:
+
+```bash
+GET /items?options=option1&options=option2&reference=123
+```
+
+**SQL Equivalent:**
+```sql
+SELECT * FROM items 
+WHERE option1 = true 
+  AND option2 = true 
+  AND reference = 123;
+```
+
+**Mixed Example:**
+
+```bash
+GET /items?options=option1,option2&reference=123
+```
+
+**SQL Equivalent:**
+```sql
+SELECT * FROM items 
+WHERE (option1 = true OR option2 = true) 
+  AND reference = 123;
+```
+
+**Result:** Items that have (`option1` OR `option2` OR both) AND `reference=123`.
+
+## Real-World Examples
+
+### Filtering Applications by Type
+
+**OR logic** - Get planning permission OR listed building consent:
+
+```bash
+GET /api/@next/public/applications?applicationType=planningPermission,listedBuildingConsent
+```
+
+**AND logic** - Applications must match both conditions:
+
+```bash
+GET /api/@next/public/applications?stage=consultation&status=undetermined
+```
+
+### Filtering Public Comments
+
+**OR logic** - Get objections OR neutral comments:
+
+```bash
+GET /api/@next/public/applications/{id}/publicComments?sentiment=objection,neutral
+```
+
+**AND logic** - Comments about design AND privacy:
+
+```bash
+GET /api/@next/public/applications/{id}/publicComments?topic=design&topic=privacy
+```
+
+**Mixed logic** - Design or privacy concerns, only objections:
+
+```bash
+GET /api/@next/public/applications/{id}/publicComments?topic=design,privacy&sentiment=objection
+```
+
+### Filtering Documents
+
+```bash
+GET /api/@next/public/applications/{id}/documents?type=floorPlan.existing,floorPlan.proposed&publishedAtFrom=2024-01-01T00:00:00Z
+```
+
+Gets floor plans (existing OR proposed) published after January 1, 2024.
+
+## Date-Based Searching
+
+When searching with dates, follow these conventions:
+
+- **Date fields** (suffix `Date`): Format as `YYYY-MM-DD`
+- **DateTime fields** (suffix `At`): Format as ISO 8601 UTC `YYYY-MM-DDTHH:MM:SSZ`
+
+### Date-Only Ranges
+
+```bash
+GET /items?consultationEndDateFrom=2024-03-01&consultationEndDateTo=2024-03-10
+```
+
+<ParamField query="consultationEndDateFrom" type="date" required>
+  Start date in `YYYY-MM-DD` format
+  
+  **Requires:** `consultationEndDateTo` must also be specified
+</ParamField>
+
+<ParamField query="consultationEndDateTo" type="date" required>
+  End date in `YYYY-MM-DD` format
+  
+  **Requires:** `consultationEndDateFrom` must also be specified
+</ParamField>
+
+### DateTime Ranges
+
+```bash
+GET /items?receivedAtFrom=2024-03-01T00:00:00Z&receivedAtTo=2024-03-10T23:59:59Z
+```
+
+<ParamField query="receivedAtFrom" type="datetime" required>
+  Start datetime in ISO 8601 UTC format
+  
+  **Requires:** `receivedAtTo` must also be specified
+</ParamField>
+
+<ParamField query="receivedAtTo" type="datetime" required>
+  End datetime in ISO 8601 UTC format
+  
+  **Requires:** `receivedAtFrom" must also be specified
+</ParamField>
+
+### Common Date Parameters
+
+| Parameter Pair | Type | Description |
+| --- | --- | --- |
+| `receivedAtFrom` / `receivedAtTo` | datetime | Application received date range |
+| `validatedAtFrom` / `validatedAtTo` | datetime | Validation date range |
+| `publishedAtFrom` / `publishedAtTo` | datetime | Publication date range |
+| `withdrawnAtFrom` / `withdrawnAtTo` | datetime | Withdrawal date range |
+| `consultationEndDateFrom` / `consultationEndDateTo` | date | Consultation end date range |
+| `councilDecisionDateFrom` / `councilDecisionDateTo` | date | Council decision date range |
+| `appealLodgedDateFrom` / `appealLodgedDateTo` | date | Appeal lodged date range |
+| `appealDecisionDateFrom` / `appealDecisionDateTo` | date | Appeal decision date range |
+
+<Note>
+  **Date pairs are required:** Both `From` and `To` parameters must be specified together.
+</Note>
+
+## Location-Based Searching
+
+<Warning>
+  This section is still under development and may change in future versions.
+</Warning>
+
+### Single Point Search
+
+Search within a radius of a specific point:
+
+```bash
+GET /items?lat=51.519389&lng=-0.108128&radius=10000
+```
+
+<ParamField query="lat" type="float" required>
+  Latitude coordinate
+  
+  **Requires:** `lng` and `radius`
+</ParamField>
+
+<ParamField query="lng" type="float" required>
+  Longitude coordinate
+  
+  **Requires:** `lat` and `radius`
+</ParamField>
+
+<ParamField query="radius" type="number" default="10000">
+  Search radius in meters
+  
+  **Conversion:** To convert miles to meters: `miles / 0.000621371`
+</ParamField>
+
+### Address/Postcode Search
+
+These parameters are geocoded into lat/lng coordinates:
+
+```bash
+GET /items?loc_postcode=EC1N 8BA&radius=10000
+GET /items?loc_address=123 Main Street&radius=10000
+```
+
+<ParamField query="loc_postcode" type="string">
+  Postcode to geocode
+  
+  **Requires:** `radius`
+</ParamField>
+
+<ParamField query="loc_address" type="string">
+  Address to geocode
+  
+  **Requires:** `radius`
+</ParamField>
+
+### Recommended Radius Values
+
+Default radius values depend on the search context:
+
+| Use Case | Recommended Radius |
+| --- | --- |
+| Small-scale searches (ATMs, cafes) | 500–1,000 meters |
+| Local searches (restaurants, businesses) | 2,000–5,000 meters |
+| City-wide searches (delivery zones) | 10,000–20,000 meters |
+| Regional searches (hospitals, large areas) | 50,000+ meters |
+
+### Multi-Point (Polygon) Search
+
+#### GeoJSON Format
+
+```bash
+GET /items?polygon={"type":"Polygon","coordinates":[[[-73.97,40.77],[-73.98,40.75],[-73.96,40.74],[-73.97,40.77]]]}
+```
+
+**GeoJSON Structure:**
+- `type`: "Polygon" to specify geometry type
+- `coordinates`: Array of `[longitude, latitude]` pairs
+- **Important:** First and last coordinates must be identical to close the polygon
+
+#### Simple Coordinate Pairs
+
+Alternatively, pass coordinates as a comma-separated string:
+
+```bash
+GET /items?polygon=-73.97,40.77,-73.98,40.75,-73.96,40.74,-73.97,40.77
+```
+
+Format: `longitude1,latitude1,longitude2,latitude2,...`
+
+## Text Search
+
+Many endpoints support a general `query` parameter for full-text search:
+
+```bash
+GET /api/@next/public/applications?query=extension
+```
+
+<ParamField query="query" type="string">
+  Search term applied across multiple fields
+  
+  **Application endpoints:** Searches `reference`, `description`, and `address`
+  
+  **Document endpoints:** Searches `name`, `type`, and `description`
+  
+  **Comment endpoints:** Searches comment text
+</ParamField>
+
+### Field-Specific Search
+
+Some endpoints support searching specific fields:
+
+```bash
+GET /api/@next/public/applications?reference=ABC-2024
+GET /api/@next/public/applications/{id}/documents?name=Floor Plan
+```
+
+## Sorting Results
+
+Combine filtering with sorting:
+
+<ParamField query="sortBy" type="string" default="varies">
+  Field to sort by
+  
+  **Common options:**
+  - `receivedAt`
+  - `publishedAt`
+  - `name`
+  - `id`
+  - `councilDecisionDate`
+</ParamField>
+
+<ParamField query="orderBy" type="string" default="desc">
+  Sort order
+  
+  **Options:**
+  - `asc` - Ascending order
+  - `desc` - Descending order
+</ParamField>
+
+```bash
+GET /api/@next/public/applications?stage=consultation&sortBy=receivedAt&orderBy=desc
+```
+
+## Complex Query Example
+
+Combining multiple filter types:
+
+```bash
+GET /api/@next/public/applications?
+  applicationType=planningPermission,priorApproval&
+  stage=consultation&
+  receivedAtFrom=2024-01-01T00:00:00Z&
+  receivedAtTo=2024-03-31T23:59:59Z&
+  lat=51.5074&
+  lng=-0.1278&
+  radius=5000&
+  sortBy=receivedAt&
+  orderBy=desc&
+  page=0&
+  resultsPerPage=20
+```
+
+This query finds:
+- Planning permission OR prior approval applications
+- Currently in consultation stage
+- Received in Q1 2024
+- Within 5km of central London
+- Sorted by received date (newest first)
+- First page with 20 results
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Endpoints" icon="route" href="/api/endpoints">
+    See filtering in action on specific endpoints
+  </Card>
+  <Card title="Response Structure" icon="brackets-curly" href="/api/response-structure">
+    Understand the response format
+  </Card>
+</CardGroup>

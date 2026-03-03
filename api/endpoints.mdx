@@ -1,0 +1,588 @@
+---
+title: Endpoint Specifications
+description: Detailed specifications for all API endpoints
+---
+
+## Public Endpoints
+
+Public endpoints return redacted data suitable for public access.
+
+### Get Published Applications
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications?page=1&resultsPerPage=10"
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.example.com/api/@next/public/applications?page=1&resultsPerPage=10',
+  {
+    headers: {
+      'Content-Type': 'application/json',
+      'x-client': 'camden',
+      'x-service': 'documentation-example'
+    }
+  }
+);
+const data = await response.json();
+```
+</CodeGroup>
+
+#### Query Parameters
+
+<ParamField query="page" type="number" default="1" required>
+  Current page number (1-indexed in API, 0-indexed internally)
+</ParamField>
+
+<ParamField query="resultsPerPage" type="number" default="10" required>
+  Number of results per page
+</ParamField>
+
+<ParamField query="query" type="string">
+  Search across `reference`, `description`, and `address` fields
+</ParamField>
+
+<ParamField query="reference" type="string">
+  Filter by application reference number
+</ParamField>
+
+<ParamField query="sortBy" type="string" default="receivedAt">
+  Sort field
+  
+  **Options:** `publishedAt`, `receivedAt`
+</ParamField>
+
+<ParamField query="orderBy" type="string" default="desc">
+  Sort order
+  
+  **Options:** `asc`, `desc`
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="PostSubmissionPublishedApplication[]">
+  Array of published applications
+</ResponseField>
+
+<ResponseField name="pagination" type="Pagination">
+  Pagination metadata
+</ResponseField>
+
+### Get Published Application
+
+Retrieve a single published application by ID.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier or reference number
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="PostSubmissionPublishedApplication">
+  Single published application object
+</ResponseField>
+
+### Get Published Documents
+
+Retrieve documents for a specific application.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001/documents?page=1&resultsPerPage=10"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+#### Query Parameters
+
+<ParamField query="page" type="number" default="1" required>
+  Current page number
+</ParamField>
+
+<ParamField query="resultsPerPage" type="number" default="10" required>
+  Number of results per page
+</ParamField>
+
+<ParamField query="name" type="string">
+  Filter by document name
+</ParamField>
+
+<ParamField query="type" type="string">
+  Filter by document type
+  
+  **Examples:** `floorPlan.existing`, `elevations.proposed`, `designAndAccessStatement`
+  
+  See [Document Types](#document-types) for full list
+</ParamField>
+
+<ParamField query="sortBy" type="string" default="publishedAt">
+  Sort field
+  
+  **Options:** `publishedAt`, `name`
+</ParamField>
+
+<ParamField query="orderBy" type="string" default="desc">
+  Sort order
+  
+  **Options:** `asc`, `desc`
+</ParamField>
+
+<ParamField query="publishedAtFrom" type="datetime">
+  Filter documents published after this datetime
+  
+  **Format:** ISO 8601 UTC (e.g., `2024-01-01T00:00:00Z`)
+</ParamField>
+
+<ParamField query="publishedAtTo" type="datetime">
+  Filter documents published before this datetime
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="PostSubmissionFile[]">
+  Array of document objects
+  
+  <Expandable title="PostSubmissionFile properties">
+    <ResponseField name="id" type="number">
+      Document ID
+    </ResponseField>
+    
+    <ResponseField name="name" type="string">
+      Document name
+    </ResponseField>
+    
+    <ResponseField name="type" type="string[]">
+      Document types/categories
+    </ResponseField>
+    
+    <ResponseField name="association" type="string">
+      File association: `application`, `appeal`, `specialistComment`, `publicComment`
+    </ResponseField>
+    
+    <ResponseField name="version" type="number">
+      Document version number
+    </ResponseField>
+    
+    <ResponseField name="thumbnailUrl" type="string">
+      URL to document thumbnail
+    </ResponseField>
+    
+    <ResponseField name="description" type="string">
+      Document description
+    </ResponseField>
+    
+    <ResponseField name="metadata" type="object">
+      Document metadata including size, mimeType, timestamps
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Get Published Document
+
+Retrieve a single document by ID.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001/documents/123"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+<ParamField path="documentId" type="number" required>
+  Document ID
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="PostSubmissionFile">
+  Single document object
+</ResponseField>
+
+### Get Published Public Comments
+
+Retrieve public (neighbour) comments for an application.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001/publicComments?page=1&resultsPerPage=10"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+#### Query Parameters
+
+<ParamField query="page" type="number" default="1" required>
+  Current page number
+</ParamField>
+
+<ParamField query="resultsPerPage" type="number" default="10" required>
+  Number of results per page
+</ParamField>
+
+<ParamField query="query" type="string">
+  Search comment text
+</ParamField>
+
+<ParamField query="sentiment" type="string">
+  Filter by sentiment
+  
+  **Options:** `objection`, `neutral`, `supportive`
+  
+  Supports AND/OR filtering
+</ParamField>
+
+<ParamField query="topic" type="string">
+  Filter by topic
+  
+  **Options:** `design`, `use`, `light`, `privacy`, `access`, `noise`, `traffic`, `other`
+  
+  Supports AND/OR filtering
+</ParamField>
+
+<ParamField query="publishedAtFrom" type="datetime">
+  Filter comments published after this datetime
+</ParamField>
+
+<ParamField query="publishedAtTo" type="datetime">
+  Filter comments published before this datetime
+</ParamField>
+
+<ParamField query="sortBy" type="string" default="publishedAt">
+  Sort field (currently only `publishedAt` supported)
+</ParamField>
+
+<ParamField query="orderBy" type="string" default="desc">
+  Sort order: `asc`, `desc`
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="PublicComment[]">
+  Array of public comment objects
+</ResponseField>
+
+### Get Published Public Comment
+
+Retrieve a single public comment.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001/publicComments/456"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+<ParamField path="publicCommentId" type="string" required>
+  Public comment ID
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="PublicComment">
+  Single public comment object
+</ResponseField>
+
+### Get Published Specialist Comments
+
+Retrieve specialist (consultee) comments for an application.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001/specialistComments?page=1&resultsPerPage=10"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+#### Query Parameters
+
+<ParamField query="page" type="number" default="1" required>
+  Current page number
+</ParamField>
+
+<ParamField query="resultsPerPage" type="number" default="10" required>
+  Number of results per page
+</ParamField>
+
+<ParamField query="query" type="string">
+  Search comment text
+</ParamField>
+
+<ParamField query="sentiment" type="string">
+  Filter by sentiment
+  
+  **Options:** `approved`, `amendmentsNeeded`, `objected`
+  
+  Supports AND/OR filtering
+</ParamField>
+
+<ParamField query="publishedAtFrom" type="datetime">
+  Filter comments published after this datetime
+</ParamField>
+
+<ParamField query="publishedAtTo" type="datetime">
+  Filter comments published before this datetime
+</ParamField>
+
+<ParamField query="sortBy" type="string" default="publishedAt">
+  Sort field (currently only `publishedAt` supported)
+</ParamField>
+
+<ParamField query="orderBy" type="string" default="desc">
+  Sort order: `asc`, `desc`
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="SpecialistComment[]">
+  Array of specialist comment objects
+</ResponseField>
+
+### Get Published Specialist
+
+Retrieve comments from a specific specialist.
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/public/applications/ABC-2024-001/specialistComments/789?page=1&resultsPerPage=10"
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+<ParamField path="specialistId" type="string" required>
+  Specialist ID
+</ParamField>
+
+#### Query Parameters
+
+<ParamField query="page" type="number" default="1" required>
+  Current page number
+</ParamField>
+
+<ParamField query="resultsPerPage" type="number" default="10" required>
+  Number of results per page
+</ParamField>
+
+#### Response
+
+<ResponseField name="data" type="SpecialistComment[]">
+  Array of comments from the specified specialist
+</ResponseField>
+
+## Private Endpoints
+
+Private endpoints require authentication and return unredacted data with sensitive information.
+
+### Get Applications
+
+Retrieve unredacted applications (private endpoint).
+
+<CodeGroup>
+```bash cURL
+curl -X GET \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  "https://api.example.com/api/@next/applications?page=1&resultsPerPage=10"
+```
+</CodeGroup>
+
+<Note>
+  This endpoint follows the same parameter structure as the public applications endpoint but returns unredacted data.
+</Note>
+
+### Send Public Comment
+
+Submit a new public comment.
+
+<CodeGroup>
+```bash cURL
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -H "x-client: camden" \
+  -H "x-service: documentation-example" \
+  -d '{"comment": "I object to this application", "sentiment": "objection"}' \
+  "https://api.example.com/api/@next/applications/ABC-2024-001/publicComments"
+```
+
+```javascript JavaScript
+const response = await fetch(
+  'https://api.example.com/api/@next/applications/ABC-2024-001/publicComments',
+  {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-client': 'camden',
+      'x-service': 'documentation-example'
+    },
+    body: JSON.stringify({
+      comment: 'I object to this application',
+      sentiment: 'objection'
+    })
+  }
+);
+const data = await response.json();
+```
+</CodeGroup>
+
+#### Path Parameters
+
+<ParamField path="applicationId" type="string" required>
+  Unique application identifier
+</ParamField>
+
+#### Request Body
+
+The request body should contain comment data and metadata. See the OpenAPI specification for detailed schema.
+
+#### Response
+
+<ResponseField name="data" type="null">
+  Empty success response
+</ResponseField>
+
+<ResponseField name="status" type="object">
+  Status object with code 200 and message "OK"
+</ResponseField>
+
+## Document Types
+
+Supported document type values for filtering:
+
+- `accessRoadsRightsOfWayDetails`
+- `advertsDrawings`
+- `affordableHousingStatement`
+- `arboriculturistReport`
+- `designAndAccessStatement`
+- `ecologyReport`
+- `elevations.existing`
+- `elevations.proposed`
+- `energyStatement`
+- `floorPlan.existing`
+- `floorPlan.proposed`
+- `floodRiskAssessment`
+- `heritageStatement`
+- `landscapeStrategy`
+- `locationPlan`
+- `noiseAssessment`
+- `planningStatement`
+- `photographs.existing`
+- `photographs.proposed`
+- `roofPlan.existing`
+- `roofPlan.proposed`
+- `sections.existing`
+- `sections.proposed`
+- `sitePlan.existing`
+- `sitePlan.proposed`
+- `transportAssessment`
+- `travelPlan`
+- `treeSurvey`
+- `visualisations`
+
+<Info>
+  For a complete list of 100+ document types, refer to the OpenAPI specification.
+</Info>
+
+## Rate Limiting
+
+<Warning>
+  Rate limiting policies are determined by individual API implementations. Consult your specific API provider for rate limit details.
+</Warning>
+
+## Error Handling
+
+All endpoints return errors in the standard response format:
+
+```json
+{
+  "data": null,
+  "status": {
+    "code": 400,
+    "message": "Bad Request",
+    "detail": "Invalid parameter: sortBy"
+  }
+}
+```
+
+See [Response Structure](/api/response-structure) for details on error responses.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Response Structure" icon="brackets-curly" href="/api/response-structure">
+    Learn about response formats
+  </Card>
+  <Card title="Filtering" icon="filter" href="/api/filtering">
+    Advanced filtering techniques
+  </Card>
+</CardGroup>

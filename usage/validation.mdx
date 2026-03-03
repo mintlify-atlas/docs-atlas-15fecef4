@@ -1,0 +1,372 @@
+---
+title: Validation Patterns
+description: Validate planning data against Digital Planning Data schemas
+---
+
+## Overview
+
+Digital Planning Data schemas use JSON Schema Draft 07 for validation. This page demonstrates validation patterns using popular JavaScript/TypeScript validation libraries.
+
+## Validation Libraries
+
+The schemas are compatible with any JSON Schema validator. The repository's test suite validates examples using both `ajv` and `jsonschema` libraries.
+
+### AJV (Recommended)
+
+AJV is a fast JSON Schema validator with excellent TypeScript support.
+
+```typescript
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import applicationSchema from '../schemas/application.json';
+
+// addFormats() is required for UUID, email, datetime, etc.
+const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+const validate = ajv.compile(applicationSchema);
+
+const isValid = validate(applicationData);
+
+if (!isValid) {
+  console.error('Validation errors:', validate.errors);
+} else {
+  console.log('Application is valid!');
+}
+```
+
+<Note>
+  The `allowUnionTypes: true` option is important for schemas that use union types (e.g., `Applicant | Agent`).
+</Note>
+
+### jsonschema Library
+
+An alternative validator with a simple API:
+
+```typescript
+import {Validator, Schema} from 'jsonschema';
+import applicationSchema from '../schemas/application.json';
+
+const validator = new Validator();
+const result = validator.validate(applicationData, applicationSchema as Schema);
+
+if (result.errors.length > 0) {
+  console.error('Validation errors:', result.errors);
+} else {
+  console.log('Application is valid!');
+}
+```
+
+## Test Suite Patterns
+
+The repository includes a comprehensive test suite that demonstrates validation patterns. Here's how the tests are structured:
+
+### Walking Example Directories
+
+```typescript
+import * as fs from 'fs';
+import * as path from 'path';
+
+/**
+ * Helper function to collect all JSON examples
+ */
+const getJSONExamples = <T>(schemaPath: string): T[] => {
+  const examples: T[] = [];
+
+  const walkDirectory = (dir: string) => {
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+
+      if (fs.statSync(filePath).isDirectory()) {
+        walkDirectory(filePath);
+      } else if (path.extname(filePath) === '.json') {
+        const example = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        examples.push(example);
+      }
+    }
+  };
+
+  const examplesDir = path.join(__dirname, `../examples/${schemaPath}`);
+  walkDirectory(examplesDir);
+
+  return examples;
+};
+```
+
+### Schema Test Configuration
+
+```typescript
+import {Application} from '../types/schemas/application';
+import {PreApplication} from '../types/schemas/preApplication';
+import {PrototypeApplication} from '../types/schemas/prototypeApplication';
+import {Enforcement} from '../types/schemas/enforcement';
+import applicationSchema from '../schemas/application.json';
+import preApplicationSchema from '../schemas/preApplication.json';
+import prototypeApplicationSchema from '../schemas/prototypeApplication.json';
+import enforcementSchema from '../schemas/enforcement.json';
+
+const schemas = [
+  {
+    name: 'Application',
+    schema: applicationSchema,
+    examples: getJSONExamples<Application>('application'),
+  },
+  {
+    name: 'PreApplication',
+    schema: preApplicationSchema,
+    examples: getJSONExamples<PreApplication>('preApplication'),
+  },
+  {
+    name: 'PrototypeApplication',
+    schema: prototypeApplicationSchema,
+    examples: getJSONExamples<PrototypeApplication>('prototypeApplication'),
+  },
+  {
+    name: 'Enforcement',
+    schema: enforcementSchema,
+    examples: getJSONExamples<Enforcement>('enforcement'),
+  },
+];
+```
+
+## Validation Test Patterns
+
+<Tabs>
+  <Tab title="AJV Tests">
+    ```typescript
+    import {describe, expect, test} from 'vitest';
+    import Ajv from 'ajv';
+    import addFormats from 'ajv-formats';
+
+    describe.each(schemas)('$name', ({schema, examples}) => {
+      describe("parsing using the 'ajv' library", () => {
+        const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+        const validate = ajv.compile(schema);
+
+        describe.each(examples)(
+          '$data.application.type.description || $applicationType',
+          example => {
+            test('accepts a valid example', async () => {
+              const isValid = validate(example);
+
+              expect(validate.errors).toBeNull();
+              expect(isValid).toBe(true);
+            });
+
+            test('rejects an invalid example', () => {
+              const invalidExample = {foo: 'bar'};
+              const isValid = validate(invalidExample);
+
+              expect(validate.errors).not.toBeNull();
+              expect(isValid).toBe(false);
+            });
+          }
+        );
+      });
+    });
+    ```
+  </Tab>
+
+  <Tab title="jsonschema Tests">
+    ```typescript
+    import {describe, expect, test} from 'vitest';
+    import {Schema, Validator} from 'jsonschema';
+
+    describe.each(schemas)('$name', ({schema, examples}) => {
+      const validator = new Validator();
+
+      describe("parsing using the 'jsonschema' library", () => {
+        describe.each(examples)(
+          '$data.application.type.description || $applicationType',
+          example => {
+            test('accepts a valid example', async () => {
+              const result = validator.validate(example, schema as Schema);
+
+              expect(result.errors).toHaveLength(0);
+            });
+
+            test('rejects an invalid example', () => {
+              const invalidExample = {foo: 'bar'};
+              const result = validator.validate(invalidExample, schema as Schema);
+
+              expect(result.errors).not.toHaveLength(0);
+            });
+          }
+        );
+      });
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Custom Validation Function
+
+Create a reusable validation function with TypeScript type guards:
+
+```typescript
+import Ajv, {ValidateFunction} from 'ajv';
+import addFormats from 'ajv-formats';
+import {Application} from 'digital-planning-data-schemas/types/schemas/application';
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+class ApplicationValidator {
+  private validate: ValidateFunction;
+
+  constructor() {
+    const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+    this.validate = ajv.compile(applicationSchema);
+  }
+
+  isValid(data: unknown): data is Application {
+    return this.validate(data) as boolean;
+  }
+
+  getErrors() {
+    return this.validate.errors;
+  }
+
+  validateOrThrow(data: unknown): Application {
+    if (!this.isValid(data)) {
+      throw new Error(
+        `Invalid application data: ${JSON.stringify(this.getErrors(), null, 2)}`
+      );
+    }
+    return data;
+  }
+}
+
+// Usage
+const validator = new ApplicationValidator();
+
+try {
+  const validatedApp = validator.validateOrThrow(incomingData);
+  // validatedApp is typed as Application
+  console.log(validatedApp.data.application.type.description);
+} catch (error) {
+  console.error('Validation failed:', error);
+}
+```
+
+## Error Handling
+
+### AJV Error Format
+
+AJV provides detailed error information:
+
+```typescript
+if (!validate(data)) {
+  validate.errors?.forEach(error => {
+    console.log({
+      field: error.instancePath,
+      message: error.message,
+      params: error.params,
+      schemaPath: error.schemaPath,
+    });
+  });
+}
+```
+
+**Example error output:**
+```json
+{
+  "field": "/data/application/fee/calculated",
+  "message": "must be number",
+  "params": {"type": "number"},
+  "schemaPath": "#/properties/data/properties/application/properties/fee/properties/calculated/type"
+}
+```
+
+### User-Friendly Error Messages
+
+```typescript
+function formatValidationErrors(errors: any[]): string[] {
+  return errors.map(error => {
+    const field = error.instancePath.replace(/\//g, '.').slice(1);
+    return `${field}: ${error.message}`;
+  });
+}
+
+if (!validate(data)) {
+  const messages = formatValidationErrors(validate.errors || []);
+  console.error('Validation failed:\n' + messages.join('\n'));
+}
+```
+
+## Partial Validation
+
+Validate specific parts of the schema:
+
+```typescript
+import {Applicant} from 'digital-planning-data-schemas/types/schemas/application/data/Applicant';
+
+// Extract just the applicant schema definition
+const applicantSchema = {
+  $ref: applicationSchema.$id + '#/definitions/Applicant',
+};
+
+const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+ajv.addSchema(applicationSchema);
+const validateApplicant = ajv.compile(applicantSchema);
+
+// Validate just applicant data
+const isValidApplicant = validateApplicant(applicantData);
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Always include format validators">
+    The schemas use format types like `uuid`, `email`, `date-time`, and `uri`. Always initialize your validator with format support:
+
+    ```typescript
+    import addFormats from 'ajv-formats';
+    const ajv = addFormats(new Ajv());
+    ```
+  </Accordion>
+
+  <Accordion title="Enable union types for AJV">
+    The schemas use TypeScript union types (e.g., `Applicant | Agent`). Enable this in AJV:
+
+    ```typescript
+    const ajv = new Ajv({allowUnionTypes: true});
+    ```
+  </Accordion>
+
+  <Accordion title="Validate early and often">
+    Validate data at system boundaries:
+    - When receiving API requests
+    - Before writing to database
+    - After reading from external sources
+    - Before passing data between services
+  </Accordion>
+
+  <Accordion title="Cache compiled validators">
+    Schema compilation is expensive. Compile once and reuse:
+
+    ```typescript
+    // Good: Compile once at module level
+    const validate = ajv.compile(applicationSchema);
+
+    export function validateApplication(data: unknown) {
+      return validate(data);
+    }
+
+    // Bad: Don't compile on every validation
+    export function validateApplication(data: unknown) {
+      const validate = ajv.compile(applicationSchema); // ❌
+      return validate(data);
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="TypeScript Types" icon="code" href="/usage/typescript-types">
+    Learn how to use TypeScript types with the schemas
+  </Card>
+  <Card title="Examples" icon="folder-open" href="/usage/examples">
+    Explore real-world validation examples
+  </Card>
+</CardGroup>

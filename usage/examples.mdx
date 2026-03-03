@@ -1,0 +1,877 @@
+---
+title: Real-World Examples
+description: Explore practical examples of using Digital Planning Data schemas
+---
+
+## Overview
+
+The repository contains comprehensive examples demonstrating how to create, validate, and work with planning application data. All examples are available in both TypeScript and JSON formats.
+
+## Example Categories
+
+Examples are organized by schema type:
+
+- **Application** - Full planning applications
+- **PreApplication** - Pre-application advice requests
+- **PrototypeApplication** - Prototype format applications
+- **PostSubmissionApplication** - Applications after submission
+- **Enforcement** - Enforcement case data
+
+## Example Structure
+
+```
+examples/
+├── application/
+│   ├── planningPermission/
+│   │   ├── fullHouseholder.json
+│   │   ├── major.json
+│   │   └── minor.json
+│   ├── lawfulDevelopmentCertificate/
+│   │   ├── existing.json
+│   │   └── proposed.json
+│   ├── priorApproval/
+│   └── data/               # TypeScript source files
+├── prototypeApplication/
+├── preApplication/
+└── enforcement/
+```
+
+## Complete Application Example
+
+### Planning Permission - Full Householder
+
+This example demonstrates a complete planning permission application for a residential roof extension:
+
+<CodeGroup>
+```typescript TypeScript Source
+import type {Application} from 'digital-planning-data-schemas/types/schemas/application';
+
+const version = process.env['VERSION'] || '@next';
+
+export const planningPermissionFullHouseholder: Application = {
+  data: {
+    application: {
+      type: {
+        value: 'pp.full.householder',
+        description: 'Planning Permission - Full householder',
+      },
+      fee: {
+        calculated: 258,
+        payable: 258,
+        category: {
+          sixAndSeven: 258,
+        },
+        exemption: {
+          disability: false,
+          resubmission: false,
+        },
+        reduction: {
+          sports: false,
+          parishCouncil: false,
+          alternative: false,
+        },
+        reference: {
+          govPay: 'sandbox-ref-456',
+        },
+      },
+      declaration: {
+        accurate: true,
+        connection: {
+          value: 'none',
+        },
+      },
+      CIL: {
+        result: 'notLiable',
+        declaration: true,
+        s73Application: false,
+        existingPermissionPrecedingCIL: false,
+        newDwellings: false,
+        floorAreaHundredPlus: false,
+      },
+    },
+    user: {
+      role: 'proxy',
+    },
+    applicant: {
+      type: 'individual',
+      name: {
+        first: 'David',
+        last: 'Bowie',
+      },
+      email: 'ziggy@example.com',
+      phone: {
+        primary: 'Not provided by agent',
+      },
+      address: {
+        sameAsSiteAddress: true,
+      },
+      siteContact: {
+        role: 'proxy',
+      },
+      ownership: {
+        interest: 'owner.sole',
+        certificate: 'a',
+        agriculturalTenants: false,
+        declaration: {
+          accurate: true,
+        },
+      },
+      agent: {
+        name: {
+          first: 'Ziggy',
+          last: 'Stardust',
+        },
+        email: 'ziggy@example.com',
+        phone: {
+          primary: '01100 0110 0011',
+        },
+        address: {
+          line1: '40 Stansfield Road',
+          line2: 'Brixton',
+          town: 'London',
+          county: 'Greater London',
+          postcode: 'SW9 9RZ',
+          country: 'UK',
+        },
+      },
+    },
+    property: {
+      address: {
+        latitude: 51.4656522,
+        longitude: -0.1185926,
+        x: 530787,
+        y: 175754,
+        title: '40, STANSFIELD ROAD, LONDON',
+        singleLine: '40, STANSFIELD ROAD, LONDON, SW9 9RZ',
+        source: 'Ordnance Survey',
+        uprn: '100021892955',
+        usrn: '21901294',
+        pao: '40',
+        street: 'STANSFIELD ROAD',
+        town: 'LONDON',
+        postcode: 'SW9 9RZ',
+      },
+      ward: 'Brixton North',
+      boundary: {
+        site: {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-0.1186569035053321, 51.465703531871384],
+                [-0.1185938715934822, 51.465724418998775],
+                [-0.1184195280075143, 51.46552473766957],
+                [-0.11848390102387167, 51.4655038504508],
+                [-0.1186569035053321, 51.465703531871384],
+              ],
+            ],
+          },
+          properties: null,
+        },
+        area: {
+          hectares: 0.012592,
+          squareMetres: 125.92,
+        },
+      },
+      planning: {
+        sources: [
+          'https://api.editor.planx.dev/gis/lambeth?geom=POLYGON...',
+        ],
+        designations: [
+          {
+            value: 'tpo',
+            description: 'Tree Preservation Order (TPO) or zone',
+            intersects: false,
+          },
+          {
+            value: 'listed',
+            description: 'Listed building',
+            intersects: false,
+          },
+          {
+            value: 'designated.conservationArea',
+            description: 'Conservation area',
+            intersects: false,
+          },
+        ],
+      },
+      localAuthorityDistrict: ['Lambeth'],
+      region: 'London',
+      type: 'residential.dwelling.house.terrace',
+      titleNumber: {
+        known: 'No',
+      },
+      EPC: {
+        known: 'No',
+      },
+      parking: {
+        cars: {
+          count: 1,
+        },
+        cycles: {
+          count: 2,
+        },
+      },
+    },
+    proposal: {
+      projectType: ['extend.roof.dormer'],
+      description: 'Roof extension to the rear of the property.',
+      boundary: {
+        site: {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-0.1186569035053321, 51.465703531871384],
+                [-0.1185938715934822, 51.465724418998775],
+                [-0.1184195280075143, 51.46552473766957],
+                [-0.11848390102387167, 51.4655038504508],
+                [-0.1186569035053321, 51.465703531871384],
+              ],
+            ],
+          },
+          properties: null,
+        },
+        area: {
+          hectares: 0.012592,
+          squareMetres: 125.92,
+        },
+      },
+      date: {
+        start: '2024-05-01',
+        completion: '2024-05-02',
+      },
+      extend: {
+        area: {
+          squareMetres: 45,
+        },
+      },
+      parking: {
+        cars: {
+          count: 1,
+          difference: 0,
+        },
+        cycles: {
+          count: 2,
+          difference: 0,
+        },
+      },
+    },
+  },
+  responses: [],
+  files: [
+    {
+      name: 'https://api.editor.planx.dev/file/private/tbp4kiba/myPlans.pdf',
+      type: [
+        {value: 'roofPlan.existing', description: 'Roof plan - existing'},
+        {value: 'roofPlan.proposed', description: 'Roof plan - proposed'},
+      ],
+    },
+  ],
+  metadata: {
+    organisation: 'LBH',
+    id: '81bcaa0f-baf5-4573-ba0a-ea868c573faf',
+    source: 'PlanX',
+    submittedAt: '2023-10-02T00:00:00.00Z',
+    schema: `https://theopensystemslab.github.io/digital-planning-data-schemas/${version}/schemas/application.json`,
+    service: {
+      flowId: '01e38c5d-e701-4e44-acdc-4d6b5cc3b854',
+      url: 'https://www.editor.planx.dev/lambeth/apply-for-planning-permission',
+      files: {
+        required: ['roofPlan.existing', 'roofPlan.proposed'],
+        recommended: ['floorPlan.existing', 'floorPlan.proposed'],
+        optional: [],
+      },
+      fee: {
+        calculated: [
+          {
+            description: 'The fee for a householder application is £258.',
+            policyRefs: [
+              {
+                text: 'UK Statutory Instruments 2023 No. 1197',
+                url: 'https://www.legislation.gov.uk/uksi/2023/1197/made',
+              },
+            ],
+          },
+        ],
+        payable: [
+          {
+            description: 'The fee for a householder application is £258.',
+          },
+        ],
+      },
+    },
+  },
+};
+```
+
+```javascript Using the Example
+import {planningPermissionFullHouseholder} from 'digital-planning-data-schemas/examples/application/data/planningPermission/fullHouseholder';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+// Validate the example
+const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+const validate = ajv.compile(applicationSchema);
+
+const isValid = validate(planningPermissionFullHouseholder);
+console.log('Is valid:', isValid); // true
+
+// Access typed data
+console.log('Application type:', 
+  planningPermissionFullHouseholder.data.application.type.description
+); // "Planning Permission - Full householder"
+
+console.log('Applicant:', 
+  planningPermissionFullHouseholder.data.applicant.name
+); // {first: "David", last: "Bowie"}
+
+console.log('Fee:', 
+  planningPermissionFullHouseholder.data.application.fee.payable
+); // 258
+```
+</CodeGroup>
+
+## Application Type Examples
+
+<Tabs>
+  <Tab title="Lawful Development Certificate">
+    ### Existing Use LDC
+
+    Example of a Lawful Development Certificate for existing use:
+
+    ```typescript
+    import type {Application} from 'digital-planning-data-schemas/types/schemas/application';
+
+    export const lawfulDevelopmentCertificateExisting: Application = {
+      data: {
+        application: {
+          type: {
+            value: 'ldc.existing',
+            description: 'Lawful Development Certificate - Existing use',
+          },
+          fee: {
+            calculated: 258,
+            payable: 258,
+            category: {
+              sixAndSeven: 258,
+            },
+            exemption: {
+              disability: false,
+              resubmission: false,
+            },
+            reduction: {
+              sports: false,
+              parishCouncil: false,
+              alternative: false,
+            },
+            reference: {
+              govPay: 'sandbox-ref-123',
+            },
+          },
+          declaration: {
+            accurate: true,
+            connection: {
+              value: 'none',
+            },
+          },
+          CIL: {
+            result: 'exempt.annexe',
+            claim: {
+              annexeOrExtensionExemption: true,
+              selfBuildExemption: false,
+              socialHousingRelief: false,
+              charityRelief: false,
+            },
+            s73Application: false,
+            existingPermissionPrecedingCIL: false,
+            newDwellings: true,
+            floorAreaHundredPlus: false,
+            newResidentialDevelopment: true,
+            newNonResidentialDevelopment: false,
+            proposedTotalArea: {
+              existing: {squareMetres: 75},
+              loss: {squareMetres: 0},
+              proposed: {squareMetres: 90},
+              net: {squareMetres: 15},
+            },
+            existingBuildings: {
+              count: 1,
+              buildings: [
+                {
+                  description: {
+                    existing: 'My primary house (75m2)',
+                    proposed: "Building a new garden studio (15m2)",
+                  },
+                  area: {
+                    retained: {squareMetres: 75},
+                    loss: {squareMetres: 0},
+                  },
+                  continuousOccupation: true,
+                  stillInUse: true,
+                },
+              ],
+            },
+          },
+        },
+        // ... rest of application data
+      },
+      responses: [],
+      files: [],
+      metadata: { /* ... */ },
+    };
+    ```
+  </Tab>
+
+  <Tab title="Prior Approval">
+    ### Prior Approval - Larger Extension
+
+    Example for prior approval of a larger extension:
+
+    ```typescript
+    export const priorApprovalLargerExtension: PrototypeApplication = {
+      applicationType: 'pa.part1.classA',
+      data: {
+        application: {
+          fee: {
+            calculated: 120,
+            payable: 120,
+            category: {
+              one: 120,
+            },
+            exemption: {
+              disability: false,
+              resubmission: false,
+            },
+            reduction: {
+              sports: false,
+              parishCouncil: false,
+              alternative: false,
+            },
+            reference: {
+              govPay: 'sandbox-ref-789',
+            },
+          },
+          declaration: {
+            accurate: true,
+            connection: {
+              value: 'none',
+            },
+          },
+        },
+        user: {
+          role: 'applicant',
+        },
+        applicant: {
+          type: 'individual',
+          name: {
+            first: 'Jane',
+            last: 'Smith',
+          },
+          email: 'jane@example.com',
+          phone: {
+            primary: '07123456789',
+          },
+          address: {
+            sameAsSiteAddress: true,
+          },
+          siteContact: {
+            role: 'applicant',
+          },
+          ownership: {
+            interest: 'owner.sole',
+            certificate: 'a',
+            agriculturalTenants: false,
+            declaration: {
+              accurate: true,
+            },
+          },
+        },
+        proposal: {
+          projectType: ['extend.rear'],
+          description: 'Single-storey rear extension',
+          extend: {
+            area: {
+              squareMetres: 24,
+            },
+          },
+        },
+        // ... rest of application
+      },
+      // ...
+    };
+    ```
+  </Tab>
+
+  <Tab title="Listed Building">
+    ### Listed Building Consent
+
+    Example for works to a listed building:
+
+    ```typescript
+    export const listedBuildingConsent: Application = {
+      data: {
+        application: {
+          type: {
+            value: 'listed',
+            description: 'Consent to do works to a Listed Building',
+          },
+          fee: {
+            calculated: 258,
+            payable: 258,
+            category: {
+              sixAndSeven: 258,
+            },
+            exemption: {
+              disability: false,
+              resubmission: false,
+            },
+            reduction: {
+              sports: false,
+              parishCouncil: false,
+              alternative: false,
+            },
+            reference: {
+              govPay: 'sandbox-ref-321',
+            },
+          },
+          declaration: {
+            accurate: true,
+            connection: {
+              value: 'none',
+            },
+          },
+        },
+        property: {
+          // Listed building properties
+          planning: {
+            designations: [
+              {
+                value: 'listed',
+                description: 'Listed building',
+                intersects: true, // Key difference!
+              },
+            ],
+          },
+          // ...
+        },
+        proposal: {
+          projectType: ['alter.internal'],
+          description: 'Internal alterations to Grade II listed building',
+        },
+        // ...
+      },
+      // ...
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## Building Examples
+
+The repository includes scripts to build JSON examples from TypeScript source:
+
+```bash
+# Build all JSON examples from TypeScript
+pnpm build-json-examples
+
+# This runs:
+pnpm ts-node scripts/build-json-examples.ts
+```
+
+The build script:
+1. Finds all TypeScript files in `examples/**/data/`
+2. Imports and executes them
+3. Extracts exported variables
+4. Writes corresponding JSON files to `examples/`
+
+## Testing Examples
+
+All examples are validated in the test suite:
+
+```typescript
+import {describe, expect, test} from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
+
+const getJSONExamples = <T>(schemaPath: string): T[] => {
+  const examples: T[] = [];
+
+  const walkDirectory = (dir: string) => {
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+      const filePath = path.join(dir, file);
+
+      if (fs.statSync(filePath).isDirectory()) {
+        walkDirectory(filePath);
+      } else if (path.extname(filePath) === '.json') {
+        const example = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+        examples.push(example);
+      }
+    }
+  };
+
+  walkDirectory(path.join(__dirname, `../examples/${schemaPath}`));
+  return examples;
+};
+
+const schemas = [
+  {
+    name: 'Application',
+    schema: applicationSchema,
+    examples: getJSONExamples<Application>('application'),
+  },
+  // ... more schemas
+];
+
+describe.each(schemas)('$name', ({schema, examples}) => {
+  const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+  const validate = ajv.compile(schema);
+
+  describe.each(examples)(
+    '$data.application.type.description',
+    example => {
+      test('validates successfully', () => {
+        expect(validate(example)).toBe(true);
+        expect(validate.errors).toBeNull();
+      });
+    }
+  );
+});
+```
+
+Run tests:
+
+```bash
+pnpm test
+```
+
+## Creating Your Own Examples
+
+<Steps>
+  <Step title="Create TypeScript file">
+    Create a new file in `examples/<schema>/data/`:
+
+    ```typescript
+    // examples/application/data/myExample.ts
+    import type {Application} from '../../../types/schemas/application';
+
+    export const myExample: Application = {
+      data: {
+        application: { /* ... */ },
+        user: { /* ... */ },
+        applicant: { /* ... */ },
+        property: { /* ... */ },
+        proposal: { /* ... */ },
+      },
+      responses: [],
+      files: [],
+      metadata: { /* ... */ },
+    };
+    ```
+  </Step>
+
+  <Step title="Build JSON">
+    Generate the JSON file:
+
+    ```bash
+    pnpm build-json-examples
+    ```
+
+    This creates `examples/application/myExample.json`.
+  </Step>
+
+  <Step title="Validate">
+    Run the test suite to ensure your example is valid:
+
+    ```bash
+    pnpm test
+    ```
+  </Step>
+</Steps>
+
+## Common Patterns
+
+### Agent vs Direct Applicant
+
+<CodeGroup>
+```typescript Agent Application
+const withAgent: Application = {
+  data: {
+    user: {
+      role: 'proxy', // or 'agent'
+    },
+    applicant: {
+      type: 'individual',
+      name: {first: 'John', last: 'Doe'},
+      email: 'john@example.com',
+      phone: {primary: '07123456789'},
+      address: {sameAsSiteAddress: true},
+      // Agent details
+      agent: {
+        name: {first: 'Jane', last: 'Agent'},
+        email: 'jane@agency.com',
+        phone: {primary: '07987654321'},
+        address: {
+          line1: '123 High Street',
+          town: 'London',
+          postcode: 'SW1A 1AA',
+        },
+      },
+      // ...
+    },
+    // ...
+  },
+  // ...
+};
+```
+
+```typescript Direct Applicant
+const directApplicant: Application = {
+  data: {
+    user: {
+      role: 'applicant',
+    },
+    applicant: {
+      type: 'individual',
+      name: {first: 'John', last: 'Doe'},
+      email: 'john@example.com',
+      phone: {primary: '07123456789'},
+      address: {
+        line1: '456 Main Road',
+        town: 'Manchester',
+        postcode: 'M1 1AA',
+      },
+      siteContact: {
+        role: 'applicant',
+      },
+      ownership: {
+        interest: 'owner.sole',
+        certificate: 'a',
+        agriculturalTenants: false,
+        declaration: {accurate: true},
+      },
+    },
+    // ...
+  },
+  // ...
+};
+```
+</CodeGroup>
+
+### GeoJSON Boundaries
+
+```typescript
+const withBoundary: Application = {
+  data: {
+    property: {
+      boundary: {
+        site: {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [
+              [
+                [-0.1186569035053321, 51.465703531871384],
+                [-0.1185938715934822, 51.465724418998775],
+                [-0.1184195280075143, 51.46552473766957],
+                [-0.11848390102387167, 51.4655038504508],
+                [-0.1186569035053321, 51.465703531871384],
+              ],
+            ],
+          },
+          properties: null,
+        },
+        area: {
+          hectares: 0.012592,
+          squareMetres: 125.92,
+        },
+      },
+      // ...
+    },
+    // ...
+  },
+  // ...
+};
+```
+
+### Planning Designations
+
+```typescript
+const withDesignations: Application = {
+  data: {
+    property: {
+      planning: {
+        sources: [
+          'https://api.example.com/gis/constraints',
+        ],
+        designations: [
+          {
+            value: 'tpo',
+            description: 'Tree Preservation Order (TPO) or zone',
+            intersects: false,
+          },
+          {
+            value: 'listed',
+            description: 'Listed building',
+            intersects: true,
+          },
+          {
+            value: 'designated.conservationArea',
+            description: 'Conservation area',
+            intersects: true,
+          },
+        ],
+      },
+      // ...
+    },
+    // ...
+  },
+  // ...
+};
+```
+
+## Available Examples
+
+The repository includes examples for:
+
+### Application Schema
+- Planning Permission (Full Householder, Major, Minor)
+- Lawful Development Certificate (Existing, Proposed)
+- Prior Approval (various classes)
+- Listed Building Consent
+- Land Drainage Consent
+- Hedgerow Removal Notice
+- Works to Trees
+- Advertisement Consent
+
+### Prototype Application Schema
+- All application types in prototype format
+- Conservation area variations
+- Different fee structures
+
+### Post-Submission Application Schema
+- Application lifecycle states (submission, validation, consultation, assessment, appeal)
+- Withdrawn applications
+- Committee determinations
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Integration Guide" icon="plug" href="/usage/integration">
+    Learn how to integrate the schemas
+  </Card>
+  <Card title="Validation" icon="check-circle" href="/usage/validation">
+    Validate your application data
+  </Card>
+  <Card title="TypeScript Types" icon="code" href="/usage/typescript-types">
+    Use TypeScript types effectively
+  </Card>
+  <Card title="Schema Reference" icon="book" href="/schemas/application">
+    Explore the full schema documentation
+  </Card>
+</CardGroup>

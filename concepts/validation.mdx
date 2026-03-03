@@ -1,0 +1,637 @@
+---
+title: Validation
+description: How validation works with Digital Planning Data Schemas
+---
+
+## Overview
+
+The Digital Planning Data Schemas use JSON Schema to provide formal validation rules. This ensures data integrity and consistency across different planning systems.
+
+## Validation Libraries
+
+The schemas are tested with two popular JSON Schema validation libraries:
+
+<CardGroup cols={2}>
+  <Card title="AJV" icon="bolt">
+    Fast, standard-compliant JSON Schema validator
+  </Card>
+  
+  <Card title="jsonschema" icon="check">
+    Simple, easy-to-use validator for Node.js
+  </Card>
+</CardGroup>
+
+Both libraries are used in the test suite to ensure broad compatibility.
+
+## Using AJV
+
+AJV (Another JSON Schema Validator) is a fast, feature-rich validator.
+
+### Installation
+
+```bash
+npm install ajv ajv-formats
+```
+
+### Basic Usage
+
+```typescript /tests/usage.test.ts
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import prototypeApplicationSchema from '../schemas/prototypeApplication.json';
+
+// addFormats() is required for types like UUID, email, datetime, etc.
+const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+
+// Compile the schema
+const validate = ajv.compile(prototypeApplicationSchema);
+
+// Validate data
+const isValid = validate(applicationData);
+
+if (!isValid) {
+  console.error('Validation errors:', validate.errors);
+} else {
+  console.log('Data is valid!');
+}
+```
+
+### Configuration Options
+
+<Accordion title="allowUnionTypes">
+  Required for the Digital Planning Data Schemas, which use TypeScript union types extensively.
+  
+  ```typescript
+  const ajv = new Ajv({ allowUnionTypes: true });
+  ```
+</Accordion>
+
+<Accordion title="addFormats">
+  The `ajv-formats` plugin adds support for format validators:
+  - `uuid`: UUID format validation
+  - `email`: Email address format
+  - `date-time`: ISO 8601 datetime format
+  - `date`: Date-only format (YYYY-MM-DD)
+  - `uri`: URI format
+  
+  ```typescript
+  import addFormats from 'ajv-formats';
+  const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+  ```
+</Accordion>
+
+### Error Handling
+
+AJV provides detailed error information:
+
+```typescript
+const isValid = validate(data);
+
+if (!isValid) {
+  validate.errors?.forEach(error => {
+    console.error({
+      path: error.instancePath,
+      message: error.message,
+      params: error.params,
+      schemaPath: error.schemaPath
+    });
+  });
+}
+```
+
+<Accordion title="Example Error Output">
+  ```json
+  {
+    "instancePath": "/data/applicant/email",
+    "schemaPath": "#/properties/data/properties/applicant/properties/email/format",
+    "keyword": "format",
+    "params": { "format": "email" },
+    "message": "must match format \"email\""
+  }
+  ```
+</Accordion>
+
+---
+
+## Using jsonschema
+
+The `jsonschema` library provides a simpler API.
+
+### Installation
+
+```bash
+npm install jsonschema
+```
+
+### Basic Usage
+
+```typescript /tests/usage.test.ts
+import { Validator, Schema } from 'jsonschema';
+import prototypeApplicationSchema from '../schemas/prototypeApplication.json';
+
+const validator = new Validator();
+
+// Validate data
+const result = validator.validate(
+  applicationData,
+  prototypeApplicationSchema as Schema
+);
+
+if (result.errors.length > 0) {
+  console.error('Validation errors:', result.errors);
+} else {
+  console.log('Data is valid!');
+}
+```
+
+### Error Handling
+
+```typescript
+const result = validator.validate(data, schema);
+
+result.errors.forEach(error => {
+  console.error({
+    property: error.property,
+    message: error.message,
+    name: error.name,
+    argument: error.argument
+  });
+});
+```
+
+---
+
+## Test Suite
+
+The repository includes comprehensive validation tests:
+
+```typescript /tests/usage.test.ts
+import { describe, expect, test } from 'vitest';
+
+const schemas = [
+  {
+    name: 'Application',
+    schema: applicationSchema,
+    examples: getJSONExamples<Application>('application'),
+  },
+  {
+    name: 'PreApplication',
+    schema: preApplicationSchema,
+    examples: getJSONExamples<PreApplication>('preApplication'),
+  },
+  {
+    name: 'PrototypeApplication',
+    schema: prototypeApplicationSchema,
+    examples: getJSONExamples<PrototypeApplication>('prototypeApplication'),
+  },
+  {
+    name: 'Enforcement',
+    schema: enforcementSchema,
+    examples: getJSONExamples<Enforcement>('enforcement'),
+  },
+];
+
+describe.each(schemas)('$name', ({ schema, examples }) => {
+  const validator = new Validator();
+  const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+  const validate = ajv.compile(schema);
+
+  describe.each(examples)(
+    '$data.application.type.description || $applicationType',
+    example => {
+      test('accepts a valid example', () => {
+        const result = validator.validate(example, schema as Schema);
+        expect(result.errors).toHaveLength(0);
+        
+        const isValid = validate(example);
+        expect(validate.errors).toBeNull();
+        expect(isValid).toBe(true);
+      });
+
+      test('rejects an invalid example', () => {
+        const invalidExample = { foo: 'bar' };
+        const result = validator.validate(invalidExample, schema as Schema);
+        expect(result.errors).not.toHaveLength(0);
+        
+        const isValid = validate(invalidExample);
+        expect(validate.errors).not.toBeNull();
+        expect(isValid).toBe(false);
+      });
+    }
+  );
+});
+```
+
+### Running Tests
+
+```bash
+# Build schemas and run tests
+pnpm test
+
+# Build schemas only
+pnpm build-schema
+
+# Run tests only (requires schemas to be built first)
+vitest
+```
+
+---
+
+## Validation Patterns
+
+### Required vs Optional Fields
+
+JSON Schema distinguishes between required and optional fields:
+
+```typescript
+// TypeScript with optional property
+interface Applicant {
+  name: {
+    first: string;
+    last: string;
+  };
+  email: string;
+  phone?: {  // Optional
+    primary: string;
+  };
+}
+```
+
+This generates a schema with required fields:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "name": { "$ref": "#/definitions/Name" },
+    "email": { "type": "string", "format": "email" },
+    "phone": { "$ref": "#/definitions/Phone" }
+  },
+  "required": ["name", "email"]
+}
+```
+
+### String Formats
+
+Common format validations:
+
+```typescript
+// UUID validation
+id: UUID;  // format: "uuid"
+
+// Email validation
+email: string;  // format: "email" (via JSDoc)
+
+// Date validation
+submittedAt: DateTime;  // format: "date-time"
+receivedDate: Date;  // format: "date"
+
+// URL validation
+schema: URL;  // format: "uri"
+```
+
+### Enum Validation
+
+TypeScript enums become JSON Schema enums:
+
+```typescript
+type UserRole = 'applicant' | 'agent' | 'proxy';
+
+interface User {
+  role: UserRole;
+}
+```
+
+Generates:
+
+```json
+{
+  "properties": {
+    "role": {
+      "type": "string",
+      "enum": ["applicant", "agent", "proxy"]
+    }
+  }
+}
+```
+
+### Array Validation
+
+Arrays can specify item types:
+
+```typescript
+interface Application {
+  files: File[];  // Array of File objects
+  responses: Responses;  // Array type alias
+}
+```
+
+### Conditional Types
+
+The schemas support discriminated unions:
+
+```typescript
+type PrototypeApplication =
+  | LawfulDevelopmentCertificateExisting
+  | PriorApprovalPart1ClassA
+  | PlanningPermissionFullHouseholder;
+```
+
+This generates a schema with `anyOf` allowing any of the types.
+
+---
+
+## Common Validation Errors
+
+### Missing Required Field
+
+<CodeGroup>
+```typescript Error
+{
+  "instancePath": "/data/applicant",
+  "message": "must have required property 'email'"
+}
+```
+
+```typescript Fix
+// Ensure all required fields are present
+const applicant = {
+  name: { first: 'John', last: 'Doe' },
+  email: 'john@example.com',  // Add missing field
+  type: 'individual'
+};
+```
+</CodeGroup>
+
+### Invalid Format
+
+<CodeGroup>
+```typescript Error
+{
+  "instancePath": "/metadata/id",
+  "message": "must match format 'uuid'"
+}
+```
+
+```typescript Fix
+// Use a valid UUID
+const metadata = {
+  id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',  // Valid UUID v4
+  // Not: '12345' or 'invalid-id'
+  organization: 'TEST',
+  submittedAt: '2024-01-01T10:00:00Z',
+  schema: 'https://example.com/schema.json'
+};
+```
+</CodeGroup>
+
+### Type Mismatch
+
+<CodeGroup>
+```typescript Error
+{
+  "instancePath": "/data/application/fee/calculated",
+  "message": "must be number"
+}
+```
+
+```typescript Fix
+// Ensure correct types
+const application = {
+  fee: {
+    calculated: 258,  // Number, not "258" (string)
+    payable: 258
+  }
+};
+```
+</CodeGroup>
+
+### Invalid Enum Value
+
+<CodeGroup>
+```typescript Error
+{
+  "instancePath": "/data/user/role",
+  "message": "must be equal to one of the allowed values",
+  "params": { "allowedValues": ["applicant", "agent", "proxy"] }
+}
+```
+
+```typescript Fix
+// Use a valid enum value
+const user = {
+  role: 'proxy'  // Valid: 'applicant' | 'agent' | 'proxy'
+  // Not: 'owner' or 'representative'
+};
+```
+</CodeGroup>
+
+---
+
+## Direct Schema Validation
+
+You can validate against hosted schemas directly:
+
+```typescript
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import fetch from 'node-fetch';
+
+const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+
+// Fetch schema from GitHub Pages
+const schemaUrl = 
+  'https://theopensystemslab.github.io/digital-planning-data-schemas/0.7.7/schemas/prototypeApplication.json';
+
+const response = await fetch(schemaUrl);
+const schema = await response.json();
+
+// Compile and validate
+const validate = ajv.compile(schema);
+const isValid = validate(applicationData);
+```
+
+---
+
+## TypeScript Type Checking
+
+For TypeScript projects, you get compile-time type checking:
+
+```typescript
+import type { PrototypeApplication } from 'digital-planning-data-schemas/types/schemas/prototypeApplication';
+
+// TypeScript will enforce the correct structure
+const application: PrototypeApplication = {
+  applicationType: 'pp.full.householder',
+  data: {
+    user: { role: 'applicant' },
+    applicant: { /* ... */ },
+    application: { /* ... */ },
+    property: { /* ... */ },
+    proposal: { /* ... */ }
+  },
+  responses: [],
+  files: [],
+  metadata: { /* ... */ }
+};
+
+// TypeScript error if structure is wrong:
+// const invalid: PrototypeApplication = {
+//   wrong: 'structure'  // Error: Object literal may only specify known properties
+// };
+```
+
+<Note>
+  TypeScript provides compile-time validation, while JSON Schema provides runtime validation. Use both for maximum safety.
+</Note>
+
+---
+
+## Custom Validation
+
+You can extend validation with custom rules:
+
+```typescript
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+
+// Add custom keyword
+ajv.addKeyword({
+  keyword: 'isValidUPRN',
+  validate: (schema: any, data: any) => {
+    // UPRN must be 12 digits
+    return /^\d{12}$/.test(data);
+  }
+});
+
+// Add custom format
+ajv.addFormat('uk-postcode', /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i);
+```
+
+---
+
+## Validation in CI/CD
+
+The repository includes automated validation in the CI pipeline:
+
+```yaml .github/workflows/test.yml
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+      - run: pnpm install
+      - run: pnpm test
+```
+
+This ensures:
+- Schemas are valid JSON Schema
+- All examples validate against schemas
+- No regressions are introduced
+
+---
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Always validate user input">
+    Never trust data from external sources. Always validate against the schema before processing.
+    
+    ```typescript
+    const isValid = validate(userInput);
+    if (!isValid) {
+      return { error: 'Invalid data', details: validate.errors };
+    }
+    // Safe to process userInput
+    ```
+  </Accordion>
+  
+  <Accordion title="Cache compiled schemas">
+    Compiling schemas is expensive. Cache the compiled validator:
+    
+    ```typescript
+    // Good: Compile once
+    const validate = ajv.compile(schema);
+    
+    app.post('/applications', (req, res) => {
+      const isValid = validate(req.body);  // Reuse compiled validator
+      // ...
+    });
+    
+    // Bad: Compile on every request
+    app.post('/applications', (req, res) => {
+      const validate = ajv.compile(schema);  // Wasteful
+      // ...
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Use TypeScript types alongside validation">
+    Combine compile-time and runtime validation:
+    
+    ```typescript
+    import type { PrototypeApplication } from 'digital-planning-data-schemas';
+    
+    function processApplication(data: unknown) {
+      // Runtime validation
+      if (!validate(data)) {
+        throw new Error('Invalid data');
+      }
+      
+      // Now TypeScript knows the type
+      const app = data as PrototypeApplication;
+      console.log(app.applicationType);  // Type-safe access
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Test with real examples">
+    Use the example files from the repository as test fixtures:
+    
+    ```typescript
+    import fullHouseholder from 'digital-planning-data-schemas/examples/prototypeApplication/planningPermission/fullHouseholder.json';
+    
+    test('validates householder example', () => {
+      expect(validate(fullHouseholder)).toBe(true);
+    });
+    ```
+  </Accordion>
+  
+  <Accordion title="Keep schemas in sync">
+    When building applications, always reference a specific schema version:
+    
+    ```typescript
+    const metadata = {
+      schema: 'https://theopensystemslab.github.io/digital-planning-data-schemas/0.7.7/schemas/prototypeApplication.json',
+      // ...
+    };
+    ```
+    
+    This ensures consistency even as schemas evolve.
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="API Implementation" href="/api/overview" icon="code">
+    Learn how to implement APIs using these schemas
+  </Card>
+  
+  <Card title="Examples" href="/usage/examples" icon="file-code">
+    Browse example applications for each schema type
+  </Card>
+</CardGroup>

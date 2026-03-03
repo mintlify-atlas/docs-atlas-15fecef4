@@ -1,0 +1,111 @@
+---
+title: API Implementation Overview
+description: Guidelines for implementing standardized planning data APIs
+---
+
+## Purpose
+
+One of the aims of this specification is to make data interoperable between systems. JSON schema allows us to do this with the data structure, but the implementation of APIs will also need to have standard implementations for applications to use the data efficiently.
+
+## API Endpoints
+
+The Digital Planning Data Schema defines two main API categories:
+
+### Public Endpoints
+
+Public endpoints do not require authentication and return redacted (non-sensitive) data. These are designed for public access and transparency.
+
+**Base path:** `/api/@next/public/applications`
+
+- Applications listing and search
+- Individual application details
+- Documents associated with applications
+- Public comments
+- Specialist comments
+
+### Private Endpoints
+
+Private endpoints require authentication and return unredacted data with sensitive information. These are for internal use by planning authorities.
+
+**Base path:** `/api/@next/applications`
+
+- Full application data
+- Unredacted documents
+- Complete comment histories
+- Submission capabilities
+
+## Authentication
+
+All endpoints use header-based authentication:
+
+<ParamField header="x-client" type="string" required>
+  Client identifier for filtering data by planning authority
+  
+  **Example:** `camden`
+</ParamField>
+
+<ParamField header="x-service" type="string" required>
+  Service identifier for tracking API usage
+  
+  **Example:** `documentation-example`
+</ParamField>
+
+## Data Formats
+
+### Dates
+
+The API follows strict date formatting conventions:
+
+- **Date-only values:** `YYYY-MM-DD` format. Date keys should have the suffix `Date`.
+- **DateTime values:** ISO 8601 format in UTC. DateTime keys should have the suffix `At`.
+
+```typescript
+interface Example {
+  receivedDate: Date;      // Date-only (YYYY-MM-DD)
+  createdAt: DateTime;     // Datetime (ISO 8601 with UTC, e.g., 2024-01-01T10:30:00Z)
+}
+```
+
+**Examples:**
+- `receivedDate: "2024-03-15"`
+- `createdAt: "2024-03-15T10:30:00Z"`
+
+## Available Endpoints
+
+| HTTP Method | Path | Public | Pagination | Sort | Search |
+| --- | --- | --- | --- | --- | --- |
+| GET | `/api/@next/public/applications` | YES | YES | YES | YES |
+| GET | `/api/@next/public/applications/{applicationId}` | YES | NO | NO | NO |
+| GET | `/api/@next/public/applications/{applicationId}/documents` | YES | YES | YES | YES |
+| GET | `/api/@next/public/applications/{applicationId}/documents/{documentId}` | YES | NO | NO | NO |
+| GET | `/api/@next/public/applications/{applicationId}/publicComments` | YES | YES | YES | YES |
+| GET | `/api/@next/public/applications/{applicationId}/publicComments/{publicCommentId}` | YES | NO | NO | NO |
+| GET | `/api/@next/public/applications/{applicationId}/specialistComments` | YES | YES | YES | YES |
+| GET | `/api/@next/public/applications/{applicationId}/specialistComments/{specialistId}` | YES | YES | YES | YES |
+| GET | `/api/@next/applications` | NO | YES | YES | YES |
+| GET | `/api/@next/applications/{applicationId}` | NO | NO | NO | NO |
+| GET | `/api/@next/applications/{applicationId}/documents` | NO | YES | YES | YES |
+| GET | `/api/@next/applications/{applicationId}/documents/{documentId}` | NO | NO | NO | NO |
+| GET | `/api/@next/applications/{applicationId}/publicComments` | NO | YES | YES | YES |
+| GET | `/api/@next/applications/{applicationId}/publicComments/{publicCommentId}` | NO | NO | NO | NO |
+| GET | `/api/@next/applications/{applicationId}/specialistComments` | NO | YES | YES | YES |
+| GET | `/api/@next/applications/{applicationId}/specialistComments/{specialistId}` | NO | YES | YES | YES |
+| POST | `/api/@next/applications/{applicationId}/publicComments` | NO | n/a | n/a | n/a |
+| POST | `/api/@next/applications/{applicationId}/specialistComments` | NO | n/a | n/a | n/a |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Response Structure" icon="brackets-curly" href="/api/response-structure">
+    Learn about the standard API response format
+  </Card>
+  <Card title="Pagination" icon="arrows-repeat" href="/api/pagination">
+    Implement offset and cursor-based pagination
+  </Card>
+  <Card title="Filtering" icon="filter" href="/api/filtering">
+    Use AND/OR filters and search parameters
+  </Card>
+  <Card title="Endpoints" icon="route" href="/api/endpoints">
+    Detailed endpoint specifications
+  </Card>
+</CardGroup>

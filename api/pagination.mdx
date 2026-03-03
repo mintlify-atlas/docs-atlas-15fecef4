@@ -1,0 +1,257 @@
+---
+title: Pagination Patterns
+description: Offset and cursor-based pagination for API endpoints
+---
+
+## Overview
+
+To maintain consistency, **offset pagination** is recommended as the default approach. However, datasets won't always be small, so APIs can also support cursor-based pagination as an optional alternative for handling large datasets efficiently.
+
+- **Offset pagination:** Default method (recommended)
+- **Cursor-based pagination:** Optional advanced method for large datasets
+
+## Offset Pagination
+
+Offset pagination is the standard pagination method using page numbers.
+
+### Response Structure
+
+```typescript
+export interface Pagination {
+  /**
+   * Number of results per page eg 10
+   */
+  resultsPerPage: number;
+  /**
+   * Current page number eg 1
+   */
+  currentPage: number;
+  /**
+   * Total number of pages eg 10
+   */
+  totalPages: number;
+  /**
+   * Represents the total number of results returned by current query
+   */
+  totalResults: number;
+  /**
+   * Represents the total number of items available in the database (#nofilter)
+   */
+  totalAvailableItems?: number;
+}
+```
+
+### Query Parameters
+
+<ParamField query="resultsPerPage" type="number" default="10">
+  Control the number of results per page
+  
+  Maximum recommended: 100
+</ParamField>
+
+<ParamField query="page" type="number" default="0">
+  Current page (zero-indexed)
+  
+  **Note:** Page numbering starts at 0
+</ParamField>
+
+### Example Request
+
+```bash
+GET /api/@next/public/applications?page=2&resultsPerPage=20
+```
+
+### Example Response
+
+```json
+{
+  "data": [
+    {
+      "applicationType": "planningPermission",
+      "data": {
+        "application": {
+          "reference": "ABC-2024-001"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "resultsPerPage": 20,
+    "currentPage": 2,
+    "totalPages": 8,
+    "totalResults": 156,
+    "totalAvailableItems": 1234
+  }
+}
+```
+
+### Offset Pagination Fields
+
+<ResponseField name="resultsPerPage" type="number">
+  Number of items returned in the current page
+</ResponseField>
+
+<ResponseField name="currentPage" type="number">
+  Current page number (zero-indexed)
+</ResponseField>
+
+<ResponseField name="totalPages" type="number">
+  Total number of pages available
+</ResponseField>
+
+<ResponseField name="totalResults" type="number">
+  Total number of results matching the current query filters
+</ResponseField>
+
+<ResponseField name="totalAvailableItems" type="number">
+  Total number of items in the database without any filters applied
+  
+  **Optional field**
+</ResponseField>
+
+## Cursor-Based Pagination
+
+Cursor-based pagination is more efficient for large datasets and provides better performance when data is frequently updated.
+
+### Response Structure
+
+```typescript
+export interface CursorPagination {
+  /**
+   * Number of results per page eg 10
+   */
+  resultsPerPage: number;
+  /**
+   * Cursor to the next page
+   */
+  nextCursor: string | null;
+  /**
+   * Cursor to the previous page
+   */
+  prevCursor: string | null;
+  /**
+   * Represents the total number of results returned by current query
+   */
+  totalResults: number;
+  /**
+   * Represents the total number of items available in the database (#nofilter)
+   */
+  totalAvailableItems?: number;
+}
+```
+
+### Query Parameters
+
+<ParamField query="resultsPerPage" type="number" default="10">
+  Control the number of results per page
+</ParamField>
+
+<ParamField query="cursor" type="string" default="abc123">
+  Cursor position for the current page
+  
+  Use the `nextCursor` or `prevCursor` values from the previous response
+</ParamField>
+
+### Example Request
+
+```bash
+# First request (no cursor)
+GET /api/@next/public/applications?resultsPerPage=20
+
+# Subsequent request (with cursor)
+GET /api/@next/public/applications?resultsPerPage=20&cursor=eyJpZCI6MTIzNH0=
+```
+
+### Example Response
+
+```json
+{
+  "data": [
+    {
+      "applicationType": "planningPermission",
+      "data": {
+        "application": {
+          "reference": "ABC-2024-001"
+        }
+      }
+    }
+  ],
+  "pagination": {
+    "resultsPerPage": 20,
+    "nextCursor": "eyJpZCI6MTI1NH0=",
+    "prevCursor": "eyJpZCI6MTIxNH0=",
+    "totalResults": 156,
+    "totalAvailableItems": 1234
+  }
+}
+```
+
+### Cursor Pagination Fields
+
+<ResponseField name="resultsPerPage" type="number">
+  Number of items returned in the current response
+</ResponseField>
+
+<ResponseField name="nextCursor" type="string | null">
+  Cursor for the next page of results
+  
+  Will be `null` if on the last page
+</ResponseField>
+
+<ResponseField name="prevCursor" type="string | null">
+  Cursor for the previous page of results
+  
+  Will be `null` if on the first page
+</ResponseField>
+
+<ResponseField name="totalResults" type="number">
+  Total number of results matching the current query filters
+</ResponseField>
+
+<ResponseField name="totalAvailableItems" type="number">
+  Total number of items in the database without any filters applied
+  
+  **Optional field**
+</ResponseField>
+
+## Choosing a Pagination Method
+
+### Use Offset Pagination When:
+
+- Dataset is small to medium-sized (< 10,000 records)
+- Users need to jump to specific page numbers
+- Total page count is important for UI
+- Data doesn't change frequently
+
+### Use Cursor-Based Pagination When:
+
+- Dataset is very large (> 10,000 records)
+- Performance is critical
+- Data is frequently updated
+- Sequential access is sufficient
+- Real-time feeds or infinite scroll UI
+
+## Implementation Notes
+
+<Note>
+  **Page Indexing:** Offset pagination uses zero-based indexing. The first page is `page=0`.
+</Note>
+
+<Warning>
+  **Performance Consideration:** For datasets with more than 10,000 records, cursor-based pagination is strongly recommended to avoid performance degradation.
+</Warning>
+
+<Info>
+  **Cursor Format:** Cursor values are opaque strings (typically base64 encoded). Clients should not attempt to parse or construct cursor values manually.
+</Info>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Filtering" icon="filter" href="/api/filtering">
+    Learn about filtering and search parameters
+  </Card>
+  <Card title="Endpoints" icon="route" href="/api/endpoints">
+    See pagination in action on specific endpoints
+  </Card>
+</CardGroup>

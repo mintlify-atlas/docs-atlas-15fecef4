@@ -1,80 +1,316 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quick Start
+description: Get started with Digital Planning Data schemas in under 5 minutes
 ---
 
-## Get started in three steps
+## Overview
 
-Get your documentation site running locally and make your first customization.
+This guide will help you quickly integrate Digital Planning Data schemas into your project and validate your first planning application payload.
 
-### Step 1: Set up your local environment
+## Three Ways to Use the Schemas
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+There are three main options for integrating with Digital Planning Data schemas:
 
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
-
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
-
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
-
-### Step 3: Go live
-
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
-
-## Next steps
-
-Now that you have your docs running, explore these key features:
-
-<CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+<CardGroup cols={3}>
+  <Card title="Hosted Schema" icon="globe" color="#0285c7">
+    Reference schema files directly from GitHub Pages
+  </Card>
+  <Card title="Local Clone" icon="git-alt" color="#16a34a">
+    Clone the repository and use schemas programmatically
+  </Card>
+  <Card title="NPM Package" icon="box" color="#ea580c">
+    Build and install as a local package in your project
+  </Card>
 </CardGroup>
 
+## Option 1: Reference Hosted Schema
+
+The simplest way to get started is by referencing the hosted schema files directly:
+
+```bash
+https://theopensystemslab.github.io/digital-planning-data-schemas/<VERSION>/schemas/<SCHEMA>.json
+```
+
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+Replace `<VERSION>` with a specific version like `0.7.7` or use `@next` for the latest version.
+Replace `<SCHEMA>` with the schema name like `application`, `enforcement`, etc.
 </Note>
+
+### Example: Validate with AJV
+
+```typescript
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+
+// Fetch the schema
+const schemaUrl = 'https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/application.json';
+const response = await fetch(schemaUrl);
+const schema = await response.json();
+
+// Compile the schema
+const validate = ajv.compile(schema);
+
+// Validate your data
+const applicationData = {
+  data: {
+    application: { /* ... */ },
+    user: { /* ... */ },
+    applicant: { /* ... */ },
+    property: { /* ... */ },
+    proposal: { /* ... */ }
+  },
+  responses: [],
+  files: [],
+  metadata: { /* ... */ }
+};
+
+const isValid = validate(applicationData);
+if (!isValid) {
+  console.error('Validation errors:', validate.errors);
+}
+```
+
+## Option 2: Clone Repository
+
+For local development and programmatic access:
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/theopensystemslab/digital-planning-data-schemas.git
+    cd digital-planning-data-schemas
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Requires [PNPM](https://pnpm.io/) to be available globally.
+    
+    ```bash
+    pnpm install
+    ```
+  </Step>
+
+  <Step title="Build the schemas">
+    ```bash
+    pnpm build
+    ```
+    
+    This generates JSON Schema files in `/schemas` from the TypeScript interfaces in `/types`.
+  </Step>
+
+  <Step title="Use schemas in your code">
+    ```typescript
+    import applicationSchema from './schemas/application.json';
+    import Ajv from 'ajv';
+    import addFormats from 'ajv-formats';
+
+    const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+    const validate = ajv.compile(applicationSchema);
+
+    const isValid = validate(yourApplicationData);
+    ```
+  </Step>
+</Steps>
+
+## Option 3: Install as Package
+
+Create a local package to install in your project:
+
+<Steps>
+  <Step title="Build the package">
+    ```bash
+    pnpm package
+    ```
+    
+    This creates a `digital-planning-data-schemas-{version}.tgz` file.
+  </Step>
+
+  <Step title="Copy to your project">
+    ```bash
+    cp digital-planning-data-schemas-0.7.7.tgz /path/to/your/project/
+    ```
+  </Step>
+
+  <Step title="Install in your project">
+    <CodeGroup>
+    ```bash npm
+    npm install digital-planning-data-schemas-0.7.7.tgz
+    ```
+
+    ```json package.json
+    {
+      "dependencies": {
+        "digital-planning-data-schemas": "file:digital-planning-data-schemas-0.7.7.tgz"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Import types and schemas">
+    ```typescript
+    // Import TypeScript types
+    import type { Application } from 'digital-planning-data-schemas/types/schemas/application';
+    import type { CommentType } from 'digital-planning-data-schemas/types/schemas/postSubmissionApplication/enums/CommentType';
+
+    // Import JSON schemas
+    import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+    // Import example data
+    import example from 'digital-planning-data-schemas/examples/application/planningPermission/fullHouseholder.json';
+    ```
+  </Step>
+</Steps>
+
+## Validate Your First Application
+
+Let's validate a planning application using both popular validation libraries:
+
+<CodeGroup>
+```typescript AJV (Recommended)
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import applicationSchema from './schemas/application.json';
+
+// addFormats() is required for UUID, email, datetime types
+const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+const validate = ajv.compile(applicationSchema);
+
+const isValid = validate(applicationData);
+
+if (!isValid) {
+  console.error('Validation errors:', validate.errors);
+} else {
+  console.log('Application is valid!');
+}
+```
+
+```typescript jsonschema
+import { Validator, Schema } from 'jsonschema';
+import applicationSchema from './schemas/application.json';
+
+const validator = new Validator();
+const result = validator.validate(applicationData, applicationSchema as Schema);
+
+if (result.errors.length > 0) {
+  console.error('Validation errors:', result.errors);
+} else {
+  console.log('Application is valid!');
+}
+```
+</CodeGroup>
+
+## Example Application Data
+
+Here's a minimal example of a valid planning application:
+
+```typescript
+const planningApplication: Application = {
+  data: {
+    application: {
+      type: {
+        value: 'pp.full.householder',
+        description: 'Planning Permission - Full householder'
+      },
+      fee: {
+        calculated: 258,
+        payable: 258,
+        category: { sixAndSeven: 258 }
+      },
+      declaration: {
+        accurate: true,
+        connection: { value: 'none' }
+      }
+    },
+    user: {
+      role: 'applicant'
+    },
+    applicant: {
+      type: 'individual',
+      name: {
+        first: 'John',
+        last: 'Smith'
+      },
+      email: 'john.smith@example.com',
+      phone: { primary: '01234567890' },
+      address: { sameAsSiteAddress: true },
+      siteContact: { role: 'applicant' }
+    },
+    property: {
+      address: {
+        latitude: 51.4656522,
+        longitude: -0.1185926,
+        title: '40, STANSFIELD ROAD, LONDON',
+        source: 'Ordnance Survey',
+        uprn: '100021892955',
+        postcode: 'SW9 9RZ'
+      },
+      boundary: {
+        site: {
+          type: 'Feature',
+          geometry: {
+            type: 'Polygon',
+            coordinates: [/* GeoJSON coordinates */]
+          },
+          properties: null
+        }
+      }
+    },
+    proposal: {
+      description: 'Construction of a single-storey rear extension'
+    }
+  },
+  responses: [],
+  files: [],
+  metadata: {
+    source: 'PlanX',
+    submittedAt: '2024-01-15T10:30:00Z'
+  }
+};
+```
+
+<Note>
+  For complete, real-world examples, see the `/examples` directory in the repository.
+</Note>
+
+## Available Schemas
+
+The following schemas are currently available:
+
+| Schema | Description | Version |
+|--------|-------------|----------|
+| `application.json` | Main planning application schema | @next |
+| `prototypeApplication.json` | Prototype application format | @next |
+| `preApplication.json` | Pre-application enquiries | @next |
+| `postSubmissionApplication.json` | Applications after submission | @next |
+| `postSubmissionPublishedApplication.json` | Published applications | @next |
+| `enforcement.json` | Planning enforcement notices | @next |
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Detailed installation and setup instructions
+  </Card>
+  <Card title="Browse Examples" icon="file-code" href="/usage/examples">
+    Explore real planning application examples
+  </Card>
+  <Card title="API Implementation" icon="code" href="/api/overview">
+    Learn how to implement the schema in your API
+  </Card>
+  <Card title="GitHub Repository" icon="github" href="https://github.com/theopensystemslab/digital-planning-data-schemas">
+    View the source code and contribute
+  </Card>
+</CardGroup>
+
+## Testing Your Integration
+
+Run the test suite to verify your setup:
+
+```bash
+pnpm test
+```
+
+This runs validation tests using both `jsonschema` and `ajv` libraries against all example payloads.

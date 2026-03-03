@@ -1,0 +1,384 @@
+---
+title: Enums Reference
+description: Enumeration types used across Digital Planning schemas
+---
+
+## Overview
+
+This page documents the various enumeration types used throughout the Digital Planning Data Schemas. Each enum provides a controlled vocabulary for specific domains within planning applications.
+
+## File Types
+
+The `FileTypes` enum defines all document and drawing types that can be submitted with planning applications.
+
+### Type Definition
+
+```typescript
+export type FileType = {
+  value: FileTypeKeys;
+  description: string;
+};
+
+type FileTypeKeys = keyof typeof FileTypes;
+```
+
+### Common File Types
+
+<AccordionGroup>
+  <Accordion title="Plans & Drawings">
+    | Key | Description |
+    |-----|-------------|
+    | `locationPlan` | Location plan |
+    | `sitePlan.existing` | Site plan - existing |
+    | `sitePlan.proposed` | Site plan - proposed |
+    | `floorPlan.existing` | Floor plan - existing |
+    | `floorPlan.proposed` | Floor plan - proposed |
+    | `elevations.existing` | Elevations - existing |
+    | `elevations.proposed` | Elevations - proposed |
+    | `sections.existing` | Sections - existing |
+    | `sections.proposed` | Sections - proposed |
+    | `roofPlan.existing` | Roof plan - existing |
+    | `roofPlan.proposed` | Roof plan - proposed |
+    | `unitPlan.existing` | Unit plan - existing |
+    | `unitPlan.proposed` | Unit plan - proposed |
+    | `usePlan.existing` | Use plan - existing |
+    | `usePlan.proposed` | Use plan - proposed |
+  </Accordion>
+
+  <Accordion title="Statements & Reports">
+    | Key | Description |
+    |-----|-------------|
+    | `designAndAccessStatement` | Design and Access Statement |
+    | `planningStatement` | Planning statement |
+    | `heritageStatement` | Heritage Statement |
+    | `sustainabilityStatement` | Sustainability statement |
+    | `statementOfCommunityInvolvement` | Statement of community involvement |
+    | `affordableHousingStatement` | Affordable housing statement |
+    | `energyStatement` | Energy statement |
+  </Accordion>
+
+  <Accordion title="Assessments">
+    | Key | Description |
+    |-----|-------------|
+    | `floodRiskAssessment` | Flood risk assessment (FRA) |
+    | `environmentalImpactAssessment` | Environmental Impact Assessment (EIA) |
+    | `transportAssessment` | Transport assessment |
+    | `noiseAssessment` | Noise assessment |
+    | `lightingAssessment` | Lighting assessment |
+    | `landscapeAndVisualImpactAssessment` | Landscape and visual impact assessment (LVIA) |
+    | `contaminationReport` | Contamination report |
+    | `foulDrainageAssessment` | Foul drainage assessment |
+    | `townCentreImpactAssessment` | Town centre uses - Impact assessment |
+    | `townCentreSequentialAssessment` | Town centre uses - Sequential assessment |
+  </Accordion>
+
+  <Accordion title="Tree & Ecology Reports">
+    | Key | Description |
+    |-----|-------------|
+    | `arboriculturistReport` | Arboriculturist report |
+    | `treesReport` | Trees report |
+    | `treeSurvey` | Tree survey |
+    | `treeConditionReport` | Tree condition report |
+    | `treeAndHedgeLocation` | Location of trees and hedges |
+    | `treeAndHedgeRemovedOrPruned` | Removed or pruned trees and hedges |
+    | `treeCanopyCalculator` | Tree canopy calculator |
+    | `ecologyReport` | Ecology report |
+    | `biodiversityNetGainInformation` | Biodiversity Net Gain (BNG) information |
+  </Accordion>
+
+  <Accordion title="Supporting Documents">
+    | Key | Description |
+    |-----|-------------|
+    | `photographs.existing` | Photographs - existing |
+    | `photographs.proposed` | Photographs - proposed |
+    | `visualisations` | Visualisations |
+    | `streetScene` | Street scene drawing |
+    | `sketchPlan` | Sketch plan |
+    | `technicalEvidence` | Technical evidence |
+    | `methodStatement` | Method statement |
+    | `statutoryDeclaration` | Statutory declaration |
+  </Accordion>
+</AccordionGroup>
+
+## Project Types
+
+The `ProjectTypes` enum defines the types of development work being proposed.
+
+### Type Definition
+
+```typescript
+export type ProjectType = {
+  value: ProjectTypeKeys;
+  description: string;
+};
+
+type ProjectTypeKeys = keyof typeof ProjectTypes;
+```
+
+### Major Categories
+
+<AccordionGroup>
+  <Accordion title="Alterations">
+    Major category for modifying existing structures:
+    
+    - `alter` - Alter a building
+    - `alter.boundary` - Changes to a fence, wall or gate
+    - `alter.equipment` - Install equipment
+    - `alter.equipment.solar` - Install solar panels
+    - `alter.equipment.heatPump` - Install a heat pump
+    - `alter.openings` - Change a door or window opening
+    - `alter.roof` - Change the roof
+    - `alter.surfaces` - Add a decked area or patio
+    - `alter.trees` - Changes to trees or hedges
+    
+    Plus 200+ specific alteration types.
+  </Accordion>
+
+  <Accordion title="Extensions">
+    Major category for adding to existing structures:
+    
+    - `extend` - Extend a building or add an outbuilding
+    - `extend.rear` - Add a rear or side extension (or conservatory)
+    - `extend.front` - Add a front extension
+    - `extend.roof` - Add a roof extension
+    - `extend.roof.dormer` - Add a roof dormer
+    - `extend.outbuilding` - Add an outbuilding
+    - `extend.basement` - Add a basement extension
+    - `extend.porch` - Add a porch
+  </Accordion>
+
+  <Accordion title="Change of Use">
+    Major category for changing how a property is used:
+    
+    - `changeOfUse` - Change the use of a building
+    - `changeOfUse.garage` - Convert a garage
+    - `changeOfUse.outbuilding` - Convert an outbuilding
+    - `changeOfUse.whole` - Convert or change the use of a whole building
+    - `changeOfUse.annexe` - Convert part into a granny flat
+    - `changeOfUse.workFromHome` - Work from home
+  </Accordion>
+
+  <Accordion title="Demolition">
+    Major category for removing structures:
+    
+    - `demolish` - Demolish a building or structure
+    - `demolish.full` - Total demolition of a building
+    - `demolish.part` - Demolish part of a building
+    - `demolish.outbuilding` - Demolish an outbuilding
+    - `demolish.boundary` - Demolish a fence, gate or boundary wall
+  </Accordion>
+
+  <Accordion title="New Buildings">
+    Major category for new construction:
+    
+    - `new` - Add a new separate building or self-contained units
+    - `new.dwelling` - New, self-contained dwelling
+    - `new.dwelling.house` - New houses
+    - `new.dwelling.flat` - New flats
+    - `new.industrial` - New industrial premises
+    - `new.retail` - New retail premises
+    - `new.office` - New offices
+  </Accordion>
+
+  <Accordion title="Internal Works">
+    Major category for internal modifications:
+    
+    - `internal` - Internal building works
+    - `internal.walls` - Alter internal walls
+    - `internal.floors` - Alter internal floors
+    - `internal.loft` - Convert a loft
+    - `internal.mezzanine` - Add a mezzanine floor
+  </Accordion>
+
+  <Accordion title="Other Categories">
+    - `maintain` - Maintenance of an existing structure
+    - `repair` - Repairs
+    - `unit` - Change of units
+    - `unit.subdivide` - Convert a home into flats
+    - `unit.merge` - Convert two or more properties into one
+    - `other` - Other project type
+  </Accordion>
+</AccordionGroup>
+
+### Usage
+
+Project types use dot notation for hierarchical organization. For example:
+- `extend.roof.dormer.rear` is more specific than
+- `extend.roof.dormer` which is more specific than
+- `extend.roof` which is more specific than
+- `extend`
+
+## Property Types
+
+The `PropertyTypes` enum defines property classifications based on BLPU (Basic Land and Property Unit) codes.
+
+### Type Definition
+
+```typescript
+export type PropertyType = {
+  value: PropertyTypeKeys;
+  description: string;
+};
+```
+
+### Major Categories
+
+<Tabs>
+  <Tab title="Residential">
+    ```typescript
+    'residential' | 'residential.house' | 'residential.house.detached' |
+    'residential.house.semiDetached' | 'residential.house.terrace' |
+    'residential.flat' | 'residential.HMO' | 'residential.institution'
+    ```
+    
+    Standard residential property types including houses, flats, and institutions.
+  </Tab>
+  
+  <Tab title="Commercial">
+    ```typescript
+    'commercial.office' | 'commercial.retail' | 'commercial.industrial' |
+    'commercial.leisure' | 'commercial.education' | 'commercial.medical'
+    ```
+    
+    Commercial properties covering retail, office, industrial, and service uses.
+  </Tab>
+  
+  <Tab title="Land">
+    ```typescript
+    'land' | 'land.park' | 'land.amenity' | 'land.forest' |
+    'land.development' | 'land.water'
+    ```
+    
+    Undeveloped or partially developed land parcels.
+  </Tab>
+  
+  <Tab title="Other">
+    ```typescript
+    'object' | 'military' | 'mixedUse' | 'dualUse' | 'parent' | 'unclassified'
+    ```
+    
+    Special classifications for monuments, military sites, and mixed-use properties.
+  </Tab>
+</Tabs>
+
+## Residential Unit Types
+
+Two variants exist for tracking residential units:
+
+### UK-wide Types
+
+```typescript
+export type UKResidentialUnitType = {
+  value: 'cluster' | 'flat' | 'house' | 'other' | 'sheltered' | 'studio';
+  description: string;
+};
+```
+
+### Greater London Authority (GLA) Types
+
+```typescript
+export type GLAResidentialUnitType = {
+  value: 'cluster' | 'coLiving' | 'detached' | 'flat' | 'HMO' |
+        'hostel' | 'LW' | 'other' | 'semiDetached' | 'student' |
+        'studio' | 'terraced';
+  description: string;
+};
+```
+
+GLA types provide more granular classification for London-specific reporting.
+
+## Use Classes
+
+The `GLAUseClasses` enum defines land use classifications tracked by the Greater London Authority.
+
+```typescript
+export type GLAUseClass = {
+  value: GLAUseClassKeys;
+  description: string;
+};
+```
+
+### Use Class Values
+
+| Key | Description |
+|-----|-------------|
+| `bTwo` | B2 - General industry |
+| `bEight` | B8 - Storage and distribution |
+| `cOne` | C1 - Hotels |
+| `cTwo` | C2 - Residential institutions |
+| `cTwoA` | C2a - Secure residential institutions |
+| `cThree` | C3 - Dwellinghouses |
+| `cFour` | C4 - Houses in multiple occupation (HMOs) |
+| `e` | E - Commercial, business and service |
+| `fOne` | F1 - Learning and non-residential institutions |
+| `fTwo` | F2 - Local community uses |
+| `SG` | Sui generis |
+| `unknown` | Not known |
+
+## Result Flags
+
+The `Flags` enum defines outcomes from planning policy checks.
+
+### Type Definition
+
+```typescript
+export type ResultFlag = {
+  value: FlagKeys;
+  description: string;
+};
+```
+
+### Flag Categories
+
+<AccordionGroup>
+  <Accordion title="Planning Permission Flags">
+    | Flag | Description |
+    |------|-------------|
+    | `Planning permission / Immune` | Changes may be beyond time limit for enforcement |
+    | `Planning permission / Permission needed` | Proposed changes may require planning permission |
+    | `Planning permission / Prior approval` | Prior Approval required |
+    | `Planning permission / Notice` | Notice to planning authority required |
+    | `Planning permission / Permitted development` | May fall within Permitted Development rules |
+    | `Planning permission / Not development` | May not meet legal definition of 'development' |
+    | `Planning permission / Missing information` | Key information missing |
+  </Accordion>
+
+  <Accordion title="Listed Buildings Flags">
+    | Flag | Description |
+    |------|-------------|
+    | `Works to listed buildings / Consent needed` | Listed building consent required |
+    | `Works to listed buildings / De minimis` | Works are minor (de minimis) |
+    | `Works to listed buildings / Not required` | Consent not required |
+    | `Works to listed buildings / Missing information` | Information missing |
+  </Accordion>
+
+  <Accordion title="Trees & Hedges Flags">
+    | Flag | Description |
+    |------|-------------|
+    | `Works to trees & hedges / Consent needed` | Consent required |
+    | `Works to trees & hedges / Notice` | Notice required |
+    | `Works to trees & hedges / Not required` | Not required |
+    | `Works to trees & hedges / Missing information` | Information missing |
+  </Accordion>
+
+  <Accordion title="Conservation Area Flags">
+    | Flag | Description |
+    |------|-------------|
+    | `Demolition in a conservation area / Consent needed` | Consent required |
+    | `Demolition in a conservation area / De minimis` | Works are minor |
+    | `Demolition in a conservation area / Not required` | Not required |
+    | `Demolition in a conservation area / Missing information` | Information missing |
+  </Accordion>
+
+  <Accordion title="Other Flag Categories">
+    - **Planning policy** - Meets/fails policy, edge cases
+    - **Community Infrastructure Levy (CIL)** - Liable, exempt, relief
+    - **Material change of use** - Determination of material change
+  </Accordion>
+</AccordionGroup>
+
+## Related Documentation
+
+- [ApplicationTypes](/reference/application-types) - Complete application type reference
+- [Shared Types](/reference/shared-types) - Common type definitions
+- [Schema Overview](/introduction) - Full schema documentation

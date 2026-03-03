@@ -1,0 +1,560 @@
+---
+title: Installation
+description: Detailed guide for installing and configuring Digital Planning Data schemas in your project
+---
+
+## Prerequisites
+
+Before installing Digital Planning Data schemas, ensure you have:
+
+- **Node.js** 16+ or compatible runtime
+- **PNPM** 8.6.6+ (for development)
+- A JSON Schema validation library (recommended: `ajv` or `jsonschema`)
+
+<Note>
+  While PNPM is used for development of the schemas themselves, you can use npm, yarn, or pnpm in your own project.
+</Note>
+
+## Installation Methods
+
+Choose the installation method that best fits your use case:
+
+<CardGroup cols={3}>
+  <Card title="Hosted Schema" icon="1">
+    Direct reference via URL - no installation required
+  </Card>
+  <Card title="Local Clone" icon="2">
+    Clone repository for development and customization
+  </Card>
+  <Card title="Local Package" icon="3">
+    Build and install as a package dependency
+  </Card>
+</CardGroup>
+
+## Method 1: Hosted Schema Files
+
+The simplest method - reference schemas directly from GitHub Pages.
+
+### Usage
+
+Schemas are hosted at:
+
+```
+https://theopensystemslab.github.io/digital-planning-data-schemas/<VERSION>/schemas/<SCHEMA>.json
+```
+
+### URL Structure
+
+- **VERSION**: Use `@next` for latest, or specific version like `0.7.7`
+- **SCHEMA**: One of `application`, `prototypeApplication`, `preApplication`, `postSubmissionApplication`, `postSubmissionPublishedApplication`, or `enforcement`
+
+### Example URLs
+
+```bash
+# Latest application schema
+https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/application.json
+
+# Specific version
+https://theopensystemslab.github.io/digital-planning-data-schemas/0.7.7/schemas/application.json
+
+# Enforcement schema
+https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/enforcement.json
+```
+
+### Install Validation Dependencies
+
+<CodeGroup>
+```bash npm
+npm install ajv ajv-formats
+```
+
+```bash pnpm
+pnpm add ajv ajv-formats
+```
+
+```bash yarn
+yarn add ajv ajv-formats
+```
+</CodeGroup>
+
+### Implementation Example
+
+```typescript
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+const SCHEMA_BASE_URL = 'https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas';
+
+async function validateApplication(data: unknown) {
+  // Fetch schema
+  const response = await fetch(`${SCHEMA_BASE_URL}/application.json`);
+  const schema = await response.json();
+
+  // Create validator with format support
+  const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+  const validate = ajv.compile(schema);
+
+  // Validate data
+  const isValid = validate(data);
+  
+  if (!isValid) {
+    console.error('Validation errors:', validate.errors);
+    return false;
+  }
+  
+  return true;
+}
+```
+
+<Warning>
+  Always pin to a specific version in production to avoid breaking changes from `@next`.
+</Warning>
+
+## Method 2: Clone Repository
+
+Clone the repository for development, testing, or contribution.
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/theopensystemslab/digital-planning-data-schemas.git
+    cd digital-planning-data-schemas
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    ```bash
+    pnpm install
+    ```
+    
+    <Note>
+      If you don't have PNPM installed globally:
+      ```bash
+      npm install -g pnpm@8.6.6
+      ```
+    </Note>
+  </Step>
+
+  <Step title="Build schemas and examples">
+    ```bash
+    pnpm build
+    ```
+    
+    This command:
+    - Generates JSON schemas from TypeScript types using `ts-json-schema-generator`
+    - Creates JSON example files from TypeScript example data
+    - Outputs schemas to `/schemas` directory
+    - Outputs examples to `/examples` directory
+  </Step>
+
+  <Step title="Verify installation">
+    Run the test suite to ensure everything is working:
+    
+    ```bash
+    pnpm test
+    ```
+    
+    This validates all schemas against all examples using both `jsonschema` and `ajv` libraries.
+  </Step>
+</Steps>
+
+### Directory Structure
+
+After building, your directory will contain:
+
+```
+digital-planning-data-schemas/
+├── schemas/              # Generated JSON Schema files
+│   ├── application.json
+│   ├── prototypeApplication.json
+│   ├── preApplication.json
+│   ├── postSubmissionApplication.json
+│   ├── postSubmissionPublishedApplication.json
+│   └── enforcement.json
+├── types/                # TypeScript type definitions
+│   ├── schemas/
+│   │   ├── application/
+│   │   ├── enforcement/
+│   │   └── shared/
+│   └── ...
+├── examples/             # Generated JSON examples
+│   ├── application/
+│   │   ├── planningPermission/
+│   │   ├── priorApproval/
+│   │   └── lawfulDevelopmentCertificate/
+│   └── ...
+└── tests/                # Test suites
+```
+
+### Using Local Schemas
+
+```typescript
+import applicationSchema from './digital-planning-data-schemas/schemas/application.json';
+import type { Application } from './digital-planning-data-schemas/types/schemas/application';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+
+const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+const validate = ajv.compile(applicationSchema);
+
+const myApplication: Application = {
+  // Your application data
+};
+
+if (!validate(myApplication)) {
+  console.error(validate.errors);
+}
+```
+
+## Method 3: Install as Local Package
+
+Build and install the schemas as a package in your project.
+
+<Steps>
+  <Step title="Clone and build package">
+    ```bash
+    git clone https://github.com/theopensystemslab/digital-planning-data-schemas.git
+    cd digital-planning-data-schemas
+    pnpm install
+    pnpm package
+    ```
+    
+    The `pnpm package` command:
+    1. Runs `pnpm build` to generate schemas
+    2. Compiles TypeScript with `pnpm compile`
+    3. Copies `.d.ts` declaration files to `/types`
+    4. Creates `digital-planning-data-schemas-{version}.tgz`
+    5. Cleans up temporary files
+  </Step>
+
+  <Step title="Copy package to your project">
+    ```bash
+    cp digital-planning-data-schemas-0.7.7.tgz /path/to/your/project/
+    cd /path/to/your/project
+    ```
+  </Step>
+
+  <Step title="Install the package">
+    <CodeGroup>
+    ```bash npm
+    npm install digital-planning-data-schemas-0.7.7.tgz
+    ```
+
+    ```bash pnpm
+    pnpm add digital-planning-data-schemas-0.7.7.tgz
+    ```
+
+    ```bash yarn
+    yarn add digital-planning-data-schemas-0.7.7.tgz
+    ```
+
+    ```json package.json
+    {
+      "dependencies": {
+        "digital-planning-data-schemas": "file:digital-planning-data-schemas-0.7.7.tgz"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Install validation dependencies">
+    ```bash
+    npm install ajv ajv-formats
+    ```
+  </Step>
+</Steps>
+
+### Package Exports
+
+The package provides the following exports:
+
+```json
+{
+  "exports": {
+    "./types/*": "./types/*",
+    "./schemas/*": "./schemas/*",
+    "./examples/*": "./examples/*"
+  }
+}
+```
+
+### Import Examples
+
+<CodeGroup>
+```typescript Types
+// Import TypeScript type definitions
+import type { Application } from 'digital-planning-data-schemas/types/schemas/application';
+import type { Applicant } from 'digital-planning-data-schemas/types/schemas/application/data/Applicant';
+import type { CommentType } from 'digital-planning-data-schemas/types/schemas/postSubmissionApplication/enums/CommentType';
+```
+
+```typescript Schemas
+// Import JSON Schema files
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+import enforcementSchema from 'digital-planning-data-schemas/schemas/enforcement.json';
+```
+
+```typescript Examples
+// Import example data
+import fullHouseholderExample from 'digital-planning-data-schemas/examples/application/planningPermission/fullHouseholder.json';
+import priorApprovalExample from 'digital-planning-data-schemas/examples/application/priorApproval/largerExtension.json';
+```
+</CodeGroup>
+
+## Validation Setup
+
+### Using AJV (Recommended)
+
+```typescript
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+// addFormats is required for UUID, email, datetime, etc.
+const ajv = addFormats(new Ajv({ 
+  allowUnionTypes: true,
+  strict: true,
+  validateFormats: true
+}));
+
+const validate = ajv.compile(applicationSchema);
+
+export function validateApplication(data: unknown): boolean {
+  const isValid = validate(data);
+  
+  if (!isValid) {
+    console.error('Validation errors:', validate.errors);
+  }
+  
+  return isValid;
+}
+```
+
+### Using jsonschema Library
+
+```typescript
+import { Validator, Schema } from 'jsonschema';
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+const validator = new Validator();
+
+export function validateApplication(data: unknown) {
+  const result = validator.validate(data, applicationSchema as Schema);
+  
+  if (result.errors.length > 0) {
+    console.error('Validation errors:', result.errors);
+    return false;
+  }
+  
+  return true;
+}
+```
+
+## Development Workflow
+
+If you're contributing to or extending the schemas:
+
+### Available Scripts
+
+```bash
+# Build schemas from TypeScript types
+pnpm build-schema
+
+# Build JSON examples from TypeScript examples
+pnpm build-json-examples
+
+# Build both schemas and examples
+pnpm build
+
+# Run tests
+pnpm test
+
+# Type checking
+pnpm check
+
+# Lint code
+pnpm lint
+
+# Fix linting issues
+pnpm fix
+
+# Create package
+pnpm package
+```
+
+### Modifying Schemas
+
+<Steps>
+  <Step title="Edit TypeScript types">
+    Modify files in `/types/schemas/` directory.
+    
+    Types are annotated using JSDoc comments which become schema descriptions:
+    
+    ```typescript
+    /**
+     * @title Application
+     * @description The root specification for a planning application
+     */
+    export interface Application {
+      data: ApplicationData;
+      metadata: Metadata;
+    }
+    ```
+  </Step>
+
+  <Step title="Rebuild schemas">
+    ```bash
+    pnpm build-schema
+    ```
+    
+    This runs the build script which uses `ts-json-schema-generator`:
+    ```bash
+    pnpm ts-json-schema-generator \
+      --path "types/schemas/application/*.ts" \
+      --out "schemas/application.json" \
+      --type "Application" \
+      --id "@next" \
+      --no-top-ref
+    ```
+  </Step>
+
+  <Step title="Test changes">
+    ```bash
+    pnpm test
+    ```
+  </Step>
+</Steps>
+
+### Adding Examples
+
+<Steps>
+  <Step title="Create TypeScript example">
+    Add a file to `/examples/<SCHEMA>/data/` with exported example data:
+    
+    ```typescript
+    // examples/application/data/myExample.ts
+    import { Application } from '../../../types/schemas/application';
+
+    export const myExample: Application = {
+      data: {
+        // Your example data
+      },
+      // ...
+    };
+    ```
+  </Step>
+
+  <Step title="Build JSON examples">
+    ```bash
+    pnpm build-json-examples
+    ```
+    
+    This automatically generates corresponding JSON files in the root of `/examples`.
+  </Step>
+
+  <Step title="Validate example">
+    ```bash
+    pnpm test
+    ```
+    
+    Confirms your example payload validates against the schema.
+  </Step>
+</Steps>
+
+## Version Management
+
+The current version is defined in `package.json`:
+
+```json
+{
+  "name": "digital-planning-data-schemas",
+  "version": "0.7.7"
+}
+```
+
+### Publishing a New Version
+
+<Steps>
+  <Step title="Update version">
+    Increment the version in `package.json`:
+    
+    ```json
+    {
+      "version": "0.7.8"
+    }
+    ```
+  </Step>
+
+  <Step title="Create pull request">
+    Open a PR against the `main` branch with the version change.
+  </Step>
+
+  <Step title="Automatic publication">
+    On merge, the `publish.yml` GitHub Action will:
+    - Update the `dist` branch
+    - Create a GitHub release
+    - Publish via GitHub Pages at the new version URL
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="PNPM not found">
+    Install PNPM globally:
+    ```bash
+    npm install -g pnpm@8.6.6
+    ```
+    
+    Or use npx:
+    ```bash
+    npx pnpm@8.6.6 install
+    ```
+  </Accordion>
+
+  <Accordion title="Build fails with TypeScript errors">
+    Ensure you're using TypeScript ~5.5.4:
+    ```bash
+    pnpm add -D typescript@~5.5.4
+    ```
+  </Accordion>
+
+  <Accordion title="Validation fails with format errors">
+    Make sure you've added format support to AJV:
+    ```typescript
+    import addFormats from 'ajv-formats';
+    const ajv = addFormats(new Ajv({ allowUnionTypes: true }));
+    ```
+  </Accordion>
+
+  <Accordion title="Cannot import types in TypeScript project">
+    Check your `tsconfig.json` includes:
+    ```json
+    {
+      "compilerOptions": {
+        "moduleResolution": "node",
+        "resolveJsonModule": true,
+        "esModuleInterop": true
+      }
+    }
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Quick Start" icon="rocket" href="/quickstart">
+    Start validating applications immediately
+  </Card>
+  <Card title="API Implementation" icon="code" href="/api/overview">
+    Learn API implementation guidelines
+  </Card>
+  <Card title="Browse Examples" icon="folder" href="/usage/examples">
+    Explore real-world planning application examples
+  </Card>
+  <Card title="View Latest Schema" icon="file-code" href="https://theopensystemslab.github.io/digital-planning-data-schemas-docs/">
+    See the latest schema documentation
+  </Card>
+</CardGroup>

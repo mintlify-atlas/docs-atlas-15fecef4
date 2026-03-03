@@ -1,0 +1,295 @@
+---
+title: Example Payloads
+description: Real-world example payloads and use cases for Digital Planning Data schemas
+---
+
+The repository includes comprehensive example payloads for each application type supported by the Digital Planning Data schemas. These examples demonstrate valid data structures and real-world usage patterns.
+
+## Example Categories
+
+Examples are organized by schema type and application category:
+
+### Application Schemas
+
+Prototype application payloads for initial submission:
+
+<CardGroup cols={2}>
+  <Card title="Planning Permission" icon="building">
+    - Full householder applications
+    - Full householder in conservation area
+    - Minor planning permission
+    - Major planning permission
+  </Card>
+  
+  <Card title="Prior Approval" icon="file-check">
+    - Larger home extensions
+    - Convert commercial to residential
+    - Extend university buildings
+    - Build new homes
+    - Solar panel installations
+  </Card>
+  
+  <Card title="Lawful Development Certificate" icon="certificate">
+    - Proposed development (LDCP)
+    - Existing development (LDCE)
+  </Card>
+  
+  <Card title="Other Application Types" icon="folder">
+    - Listed Building Consent
+    - Land Drainage Consent
+    - Works to Trees
+    - Hedgerow Removal Notice
+    - Compliance Confirmation
+    - Advert Consent
+  </Card>
+</CardGroup>
+
+### Post-Submission Schemas
+
+Examples showing application lifecycle stages:
+
+- Submission
+- Validation (valid/invalid)
+- Consultation
+- Assessment (in progress, determined by council, in committee, committee determined)
+- Appeal (lodged, validated, started, determined)
+- Withdrawn
+
+### Pre-Application Schema
+
+Pre-application advice request examples.
+
+### Enforcement Schema
+
+Planning breach reporting examples.
+
+## Example Structure
+
+All example payloads follow a consistent structure:
+
+### Data Section
+
+Contains the core application data:
+
+<CodeGroup>
+```json Planning Permission Example (Excerpt)
+{
+  "data": {
+    "application": {
+      "type": {
+        "value": "pp.full.householder",
+        "description": "Planning Permission - Full householder"
+      },
+      "fee": {
+        "calculated": 258,
+        "payable": 258,
+        "category": {
+          "sixAndSeven": 258
+        }
+      }
+    },
+    "applicant": {
+      "type": "individual",
+      "name": {
+        "first": "David",
+        "last": "Bowie"
+      },
+      "email": "ziggy@example.com"
+    },
+    "property": {
+      "address": {
+        "latitude": 51.4656522,
+        "longitude": -0.1185926,
+        "title": "40, STANSFIELD ROAD, LONDON",
+        "uprn": "100021892955"
+      }
+    }
+  }
+}
+```
+
+```json Prior Approval Example (Excerpt)
+{
+  "data": {
+    "applicant": {
+      "type": "individual",
+      "name": {
+        "first": "William",
+        "last": "Zane"
+      },
+      "email": "areyouon@email.org"
+    },
+    "property": {
+      "address": {
+        "title": "32, ST JAMES ROAD, PURLEY",
+        "uprn": "100020623888"
+      },
+      "type": {
+        "value": "residential.house.detached",
+        "description": "Detached"
+      }
+    }
+  }
+}
+```
+
+```json Enforcement Example (Excerpt)
+{
+  "data": {
+    "complainant": {
+      "name": {
+        "first": "Ebenezer",
+        "last": "Scrooge"
+      },
+      "email": "scrooge@waltdisney.com"
+    },
+    "application": {
+      "type": {
+        "value": "breach",
+        "description": "Report a planning breach"
+      }
+    },
+    "report": {
+      "description": "Unauthorised erection of a library in the front garden",
+      "projectType": [
+        {
+          "value": "outbuilding",
+          "description": "New or modified outbuilding (eg garage or shed)"
+        }
+      ]
+    }
+  }
+}
+```
+</CodeGroup>
+
+### Responses Section
+
+Captures user responses to questions asked during the application journey:
+
+```json
+{
+  "responses": [
+    {
+      "question": "Is the property in a conservation area?",
+      "responses": [
+        {
+          "value": "Yes"
+        }
+      ],
+      "metadata": {
+        "autoAnswered": true
+      }
+    }
+  ]
+}
+```
+
+### Metadata Section
+
+Includes submission metadata and service information:
+
+```json
+{
+  "metadata": {
+    "id": "80d3c3c2-0d1c-4a79-be99-912f488c2f02",
+    "organisation": "SWK",
+    "submittedAt": "2024-03-18T11:25:13.924Z",
+    "source": "PlanX",
+    "service": {
+      "flowId": "50b3e139-ad36-420b-8f2a-10c87ecb6668",
+      "url": "https://editor.planx.dev/southwark/apply-for-planning-permission/published",
+      "fee": {
+        "calculated": 258,
+        "payable": 258
+      }
+    },
+    "schema": "https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/application.json"
+  }
+}
+```
+
+## Accessing Examples
+
+Examples are available in the repository's `/examples` directory:
+
+<Steps>
+  <Step title="Browse GitHub">
+    View examples directly on [GitHub](https://github.com/theopensystemslab/digital-planning-data-schemas/tree/main/examples)
+  </Step>
+  
+  <Step title="Clone Repository">
+    ```bash
+    git clone https://github.com/theopensystemslab/digital-planning-data-schemas.git
+    cd digital-planning-data-schemas/examples
+    ```
+  </Step>
+  
+  <Step title="Reference Hosted Files">
+    Access JSON examples via the hosted schema site:
+    ```
+    https://theopensystemslab.github.io/digital-planning-data-schemas/<VERSION>/examples/<EXAMPLE>.json
+    ```
+  </Step>
+</Steps>
+
+## Example Files by Type
+
+### Planning Permission
+
+- `application/planningPermission/fullHouseholder.json` - Standard householder application
+- `application/planningPermission/fullHouseholderInConservationArea.json` - Householder in conservation area
+- `application/planningPermission/minor.json` - Minor development
+- `application/planningPermission/major.json` - Major development
+
+### Prior Approval
+
+- `application/priorApproval/largerExtension.json` - Single-storey rear extension
+- `application/priorApproval/convertCommercialToHome.json` - Change of use
+- `application/priorApproval/extendUniversity.json` - Educational building extension
+- `application/priorApproval/buildHomes.json` - New residential development
+- `application/priorApproval/solarPanels.json` - Renewable energy installation
+
+### Lawful Development Certificate
+
+- `application/lawfulDevelopmentCertificate/proposed.json` - LDCP application
+- `application/lawfulDevelopmentCertificate/existing.json` - LDCE application
+
+### Other Types
+
+- `application/listedBuildingConsent.json` - Listed building works
+- `application/landDrainageConsent.json` - Drainage works
+- `preApplication/preApp.json` - Pre-application advice request
+- `enforcement/breach.json` - Planning breach report
+
+## Using Examples in Your Project
+
+Examples can be used for:
+
+<CardGroup cols={2}>
+  <Card title="Schema Validation" icon="check-circle">
+    Test your implementation against known-valid payloads
+  </Card>
+  
+  <Card title="Development" icon="code">
+    Use as templates when building new services
+  </Card>
+  
+  <Card title="Testing" icon="vial">
+    Create comprehensive test suites with real-world data
+  </Card>
+  
+  <Card title="Documentation" icon="book">
+    Reference concrete examples in technical specifications
+  </Card>
+</CardGroup>
+
+## Validation
+
+All examples are validated against their respective schemas during the build process. You can validate your own payloads:
+
+```bash
+pnpm test
+```
+
+See the [Contributing guide](/resources/contributing) for more details on adding and testing new examples.

@@ -1,0 +1,468 @@
+---
+title: Shared Types
+description: Common type definitions used across all Digital Planning schemas
+---
+
+## Overview
+
+Shared types are reusable TypeScript type definitions used throughout the Digital Planning Data Schemas. These types ensure consistency across different application schemas and provide standardized structures for common data patterns.
+
+## Utility Types
+
+### UUID
+
+```typescript
+/**
+ * @format uuid
+ */
+export type UUID = string;
+```
+
+A universally unique identifier conforming to the UUID format standard.
+
+### Email
+
+```typescript
+/**
+ * @format email
+ */
+export type Email = string;
+```
+
+A valid email address string.
+
+### URL
+
+```typescript
+/**
+ * @format uri
+ * @pattern ^https?://
+ */
+export type URL = string;
+```
+
+A valid HTTP or HTTPS URL.
+
+### DateTime
+
+```typescript
+/**
+ * @format date-time
+ * @pattern ^([0-9]+)-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])[Tt]([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)(\.[0-9]+)?(([Zz])|([\ +|\-]([01][0-9]|2[0-3]):[0-5][0-9]))$
+ */
+export type DateTime = string;
+```
+
+ISO 8601 date-time string with timezone information.
+
+### Date
+
+```typescript
+/**
+ * @format date
+ */
+export type Date = string;
+```
+
+ISO 8601 date string (YYYY-MM-DD).
+
+### Area
+
+```typescript
+export type Area = {
+  squareMetres: number;
+  hectares?: number;
+};
+```
+
+Represents an area measurement in metric units.
+
+### Integer
+
+```typescript
+export type Integer = number;
+```
+
+A whole number value.
+
+## Address Types
+
+### SiteAddress
+
+```typescript
+export interface SiteAddress {
+  /** Single line address description */
+  title: string;
+  /** Easting coordinate in British National Grid (OSGB36) */
+  x: number;
+  /** Northing coordinate in British National Grid (OSGB36) */
+  y: number;
+  /** Latitude coordinate in EPSG:4326 (WGS84) */
+  latitude: number;
+  /** Longitude coordinate in EPSG:4326 (WGS84) */
+  longitude: number;
+}
+```
+
+Base address information for any site location.
+
+### ProposedAddress
+
+```typescript
+export interface ProposedAddress extends SiteAddress {
+  source: 'Proposed by applicant';
+}
+```
+
+Address information for sites without a known UPRN.
+
+### OSAddress
+
+```typescript
+export interface OSAddress extends SiteAddress {
+  /** Unique Property Reference Number (max 12 characters) */
+  uprn: string;
+  /** Unique Street Reference Number (max 8 characters) */
+  usrn: string;
+  /** Primary Addressable Object (PAO) start and/or description */
+  pao: string;
+  /** Primary Addressable Object (PAO) end range */
+  paoEnd?: string;
+  /** Secondary Addressable Object (SAO) start and/or description */
+  sao?: string;
+  /** Secondary Addressable Object (SAO) end range */
+  saoEnd?: string;
+  street: string;
+  town: string;
+  postcode: string;
+  organisation?: string;
+  singleLine: string;
+  source: 'Ordnance Survey';
+}
+```
+
+Address sourced from Ordnance Survey AddressBase Premium.
+
+### Address
+
+```typescript
+export interface Address {
+  line1: string;
+  line2?: string;
+  town: string;
+  county?: string;
+  postcode: string;
+  country?: string;
+}
+```
+
+Generic contact address structure.
+
+### UserAddress
+
+```typescript
+export type UserAddress = {sameAsSiteAddress: true} | UserAddressNotSameSite;
+
+export interface UserAddressNotSameSite extends Address {
+  sameAsSiteAddress: false;
+}
+```
+
+Applicant address that may match or differ from the site address.
+
+## Contact Information
+
+### ContactDetails
+
+```typescript
+export type ContactDetails = {
+  name: {
+    title?: string;
+    first: string;
+    last: string;
+  };
+  email: Email;
+  phone: {
+    primary: string;
+  };
+  company?: {
+    name: string;
+  };
+};
+```
+
+Standard contact information structure for people associated with applications.
+
+## User & Response Types
+
+### User
+
+```typescript
+export interface User {
+  role: 'applicant' | 'agent' | 'proxy';
+}
+```
+
+The role of the user who completed the application.
+
+### Response
+
+```typescript
+export interface Response {
+  value: string;
+  metadata?: ResponseMetaData;
+}
+
+export interface ResponseMetaData {
+  flags?: Array<string>;
+  options?: Array<string> | Array<Response>;
+}
+```
+
+A single response value with optional metadata.
+
+### QuestionAndResponses
+
+```typescript
+export interface QuestionAndResponses {
+  question: string;
+  responses: Array<Response> | string;
+  metadata?: QuestionMetaData;
+}
+
+export interface QuestionMetaData {
+  autoAnswered?: boolean;
+  policyRefs?: Array<{
+    text: string;
+    url?: URL;
+  }>;
+  sectionName?: string;
+  id?: string;
+  tags?: Array<string>;
+}
+```
+
+A question paired with its responses and metadata.
+
+### Responses
+
+```typescript
+export type Responses = QuestionAndResponses[];
+```
+
+Ordered list of all questions and answers in an application.
+
+## Site Information
+
+### Site
+
+```typescript
+export type Site = {
+  /** The property address */
+  address: ProposedAddress | OSAddress;
+  /** Development corporations containing this address */
+  developmentCorporations?: string[];
+  /** UK Local Authority Districts (LAD) */
+  localAuthorityDistrict: string[];
+  /** UK Local Planning Authorities (LPA) */
+  localPlanningAuthority?: string[];
+  /** Ward name */
+  ward: string;
+  /** Region name */
+  region: Region;
+  /** HM Land Registry boundary (blue line) */
+  boundary?: GeoBoundary;
+};
+```
+
+Complete information about the site as it currently exists.
+
+## Ownership Types
+
+### OwnersInterest
+
+```typescript
+export type OwnersInterest =
+  | 'owner'
+  | 'owner.sole'
+  | 'owner.co'
+  | 'lessee'
+  | 'occupier'
+  | 'other';
+```
+
+Types of ownership interest in a property.
+
+### Ownership
+
+```typescript
+export interface Ownership {
+  interest?: OwnersInterest;
+  interestDescription?: string;
+  certificate?: 'a' | 'b' | 'c' | 'd';
+  /** Does the land have any agricultural tenants? */
+  agriculturalTenants?: boolean;
+  /** Has requisite notice been given? */
+  noticeGiven?: boolean;
+  /** Has notice been published in a newspaper? */
+  noticePublished?: {
+    status: boolean;
+    date?: Date;
+    newspaperName?: string;
+  };
+  /** Do you know the names of all owners? */
+  ownersKnown?: 'all' | 'some' | 'none';
+  owners?: Owners[];
+  /** Declaration of accuracy */
+  declaration?: {
+    accurate: true;
+  };
+}
+```
+
+Comprehensive ownership information for the property.
+
+### Owners
+
+```typescript
+export type Owners = OwnersNoticeGiven | OwnersNoNoticeGiven | OwnersNoticeDate;
+
+export interface BaseOwners {
+  name: string;
+  address: Address;
+}
+
+export interface OwnersNoticeDate extends BaseOwners {
+  noticeDate: Date;
+}
+
+export interface OwnersInterestedInLand extends BaseOwners {
+  interest: string;
+}
+
+export interface OwnersNoticeGiven extends OwnersInterestedInLand {
+  noticeGiven: true;
+}
+
+export interface OwnersNoNoticeGiven extends OwnersInterestedInLand {
+  noticeGiven: false;
+  noNoticeReason: string;
+}
+```
+
+Information about property owners who are not the applicant.
+
+## Declaration
+
+```typescript
+export interface Declaration {
+  accurate: boolean;
+  connection: {
+    value:
+      | 'employee'
+      | 'relation.employee'
+      | 'electedMember'
+      | 'relation.electedMember'
+      | 'none';
+    description?: string;
+  };
+}
+```
+
+Statutory declarations about application accuracy and conflicts of interest.
+
+## Fee Types
+
+### Fee
+
+```typescript
+export interface Fee {
+  /** Total calculated fee in GBP */
+  calculated: number;
+  /** Total calculated VAT in GBP */
+  calculatedVAT?: number;
+  /** Total payable fee after exemptions in GBP */
+  payable: number;
+  /** Total payable VAT in GBP */
+  payableVAT?: number;
+  /** PlanX service charge in GBP */
+  serviceCharge?: number;
+  serviceChargeVAT?: number;
+  /** Fast Track fee in GBP */
+  fastTrack?: number;
+  fastTrackVAT?: number;
+  /** Payment processing fee in GBP */
+  paymentProcessing?: number;
+  paymentProcessingVAT?: number;
+  /** Breakdown by category */
+  category?: {
+    one?: number;      // New homes
+    two?: number;      // Other new buildings
+    three?: number;    // Agricultural buildings
+    four?: number;     // Glasshouses
+    five?: number;     // Plant equipment
+    sixAndSeven?: number; // Home or curtilage
+    eight?: number;    // Car parks
+    nine?: number;     // Exploratory drilling
+    ten?: number;      // Oil or gas
+    eleven?: { one?: number; two?: number; };
+    twelve?: { one?: number; two?: number; };
+    thirteen?: number; // Waste disposal
+    fourteen?: number; // Other change of use
+  };
+  exemption: {
+    disability: boolean;
+    resubmission: boolean;
+  };
+  reduction: {
+    alternative: boolean;
+    parishCouncil: boolean;
+    sports: boolean;
+  };
+  reference?: {
+    govPay: string;
+    metadata?: Record<string, string | number | boolean>;
+  };
+}
+```
+
+Detailed fee calculation with exemptions and reductions.
+
+### FeeNotApplicable
+
+```typescript
+export interface FeeNotApplicable {
+  notApplicable: true;
+}
+```
+
+Indicates that no fee applies to this application type.
+
+## Materials
+
+```typescript
+export type Materials = {
+  boundary?: string;
+  ceiling?: string;
+  chimney?: string;
+  door?: string;
+  doorInternal?: string;
+  floor?: string;
+  lighting?: string;
+  rainwater?: string;
+  roof?: string;
+  surface?: string;
+  wall?: string;
+  wallInternal?: string;
+  window?: string;
+  other?: string;
+};
+```
+
+Materials used in construction or renovation.
+
+## Related Documentation
+
+- [ApplicationTypes](/reference/application-types) - Application type enumeration
+- [Enums](/reference/enums) - Other enum definitions
+- [Metadata Reference](/api-reference/metadata) - Metadata schemas

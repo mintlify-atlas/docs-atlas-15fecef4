@@ -1,0 +1,282 @@
+---
+title: "PostSubmissionPublishedApplication"
+description: "Redacted version of PostSubmissionApplication for public access"
+---
+
+## Overview
+
+The PostSubmissionPublishedApplication schema is an extension of the PostSubmissionApplication schema designed for public consumption. It redacts sensitive personal information while maintaining the transparency of the planning process. This schema is suitable for publishing on public-facing planning portals and APIs.
+
+## Key Differences from PostSubmissionApplication
+
+PostSubmissionPublishedApplication extends PostSubmissionApplication with these important privacy protections:
+
+### Redacted Comments
+- Public comments have personal details removed or anonymized
+- Comment text may be moderated
+- Contact information is not exposed
+
+### Redacted Files
+- File metadata is preserved
+- Personally identifiable information in file descriptions is removed
+- Files containing sensitive information may be excluded
+
+### Protected Personal Data
+- Applicant contact details may be limited
+- Agent information may be redacted
+- Email addresses and phone numbers are typically removed
+
+## Schema Structure
+
+The PostSubmissionPublishedApplication maintains the same overall structure as PostSubmissionApplication:
+
+<ResponseField name="applicationType" type="ApplicationType" required>
+  The specific type of application
+</ResponseField>
+
+<ResponseField name="data" type="object" required>
+  Application data including stage, status, and decision information (same as PostSubmissionApplication)
+</ResponseField>
+
+<ResponseField name="comments" type="object">
+  Redacted comments from public and specialist consultees
+  
+  <Expandable title="properties">
+    <ResponseField name="public" type="PublicCommentsRedacted">
+      Array of redacted public comments
+      
+      <Expandable title="properties">
+        <ResponseField name="id" type="string" required>
+          Unique identifier for the comment
+        </ResponseField>
+        
+        <ResponseField name="createdAt" type="string" required>
+          When the comment was submitted
+        </ResponseField>
+        
+        <ResponseField name="sentiment" type="CommentSentiment">
+          Whether the comment supports or objects to the application
+        </ResponseField>
+        
+        <ResponseField name="summary" type="string">
+          Brief summary of the comment (redacted if necessary)
+        </ResponseField>
+        
+        <ResponseField name="text" type="string" required>
+          Comment text with personal information redacted
+        </ResponseField>
+        
+        <ResponseField name="redacted" type="boolean">
+          Indicates if the comment has been redacted
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="specialist" type="SpecialistCommentsRedacted">
+      Array of redacted specialist comments with personal details removed
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="files" type="PostSubmissionFileRedacted[]">
+  File metadata with sensitive information removed
+  
+  <Expandable title="properties">
+    <ResponseField name="association" type="FileAssociation" required>
+      What stage the file relates to
+    </ResponseField>
+    
+    <ResponseField name="uploadedAt" type="string" required>
+      When the file was uploaded
+    </ResponseField>
+    
+    <ResponseField name="name" type="string" required>
+      File name (potentially sanitized)
+    </ResponseField>
+    
+    <ResponseField name="type" type="string[]" required>
+      Classified file types
+    </ResponseField>
+    
+    <ResponseField name="redacted" type="boolean">
+      Indicates if file information has been redacted
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="submission" type="PrototypeApplication" required>
+  The original application (should also have redacted personal information)
+</ResponseField>
+
+<ResponseField name="metadata" type="PostSubmissionMetadata" required>
+  Metadata about the application (same as PostSubmissionApplication)
+</ResponseField>
+
+## Data Protection Considerations
+
+When using PostSubmissionPublishedApplication, consider:
+
+### Personal Data Handling
+- **GDPR Compliance** - Ensure personal data is processed lawfully under UK GDPR
+- **Data Minimization** - Only include data necessary for transparency
+- **Legitimate Interest** - Balance public interest against individual privacy rights
+
+### Redaction Strategy
+- **Consistent Approach** - Apply redactions uniformly across all applications
+- **Context Preservation** - Maintain enough context for meaningful public engagement
+- **Sensitive Cases** - Additional redactions may be needed for vulnerable individuals
+
+### Public Access
+- **Planning Register** - Meet statutory requirements for public planning registers
+- **Comment Periods** - Enable informed public participation
+- **Accountability** - Maintain transparency in decision-making
+
+## Example Payload
+
+Here's an example showing a published application with redacted comments:
+
+```json
+{
+  "applicationType": "pp.full.householder",
+  "data": {
+    "application": {
+      "reference": "24/00123/FUL",
+      "stage": "assessment",
+      "status": "undetermined"
+    },
+    "localPlanningAuthority": {
+      "name": "Southwark Council",
+      "code": "STHW"
+    },
+    "submission": {
+      "submittedAt": "2024-02-15T14:00:00.000Z"
+    },
+    "validation": {
+      "validatedAt": "2024-02-20T10:00:00.000Z",
+      "valid": true
+    },
+    "consultation": {
+      "startDate": "2024-02-21T00:00:00.000Z",
+      "endDate": "2024-03-13T23:59:59.000Z"
+    },
+    "caseOfficer": {
+      "name": "Planning Officer"
+    }
+  },
+  "comments": {
+    "public": [
+      {
+        "id": "comment-001",
+        "createdAt": "2024-02-25T15:30:00.000Z",
+        "sentiment": "objection",
+        "summary": "Concerns about overshadowing",
+        "text": "I object to this application as the proposed extension would overshadow my garden and reduce natural light to my property.",
+        "redacted": true
+      },
+      {
+        "id": "comment-002",
+        "createdAt": "2024-02-28T10:15:00.000Z",
+        "sentiment": "support",
+        "summary": "Supports the proposal",
+        "text": "I support this application. The design is sympathetic to the character of the area.",
+        "redacted": false
+      }
+    ],
+    "specialist": [
+      {
+        "consultee": "Highways Department",
+        "recommendation": "No objection",
+        "comments": "The proposal does not impact highway safety or parking provision."
+      }
+    ]
+  },
+  "files": [
+    {
+      "association": "submission",
+      "uploadedAt": "2024-02-15T14:00:00.000Z",
+      "name": "site-plan.pdf",
+      "type": ["sitePlan.proposed"],
+      "redacted": false
+    }
+  ],
+  "submission": {
+    /* Redacted PrototypeApplication data */
+  },
+  "metadata": {
+    "organisation": "STHW",
+    "id": "789e012f-3456-7890-abcd-ef1234567890",
+    "submittedAt": "2024-02-15T14:00:00.000Z",
+    "generatedAt": "2024-03-01T12:00:00.000Z",
+    "schema": "https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/postSubmissionPublishedApplication.json"
+  }
+}
+```
+
+## Redaction Best Practices
+
+### What to Redact
+- Personal names (unless the individual is the applicant/agent and this is public record)
+- Email addresses
+- Phone numbers
+- Specific property addresses in comments (replace with general references)
+- Signatures
+- Personal identifiers
+
+### What to Preserve
+- Planning merits of comments
+- Sentiment and stance (support/object)
+- Material planning considerations
+- Policy references
+- Technical assessments
+- Decision rationale
+
+### Automated Redaction
+Consider implementing:
+- Pattern matching for email addresses and phone numbers
+- Named entity recognition for personal names
+- Manual review for edge cases
+- Audit logs of redaction decisions
+
+## Use Cases
+
+### Public Planning Portal
+Display planning applications on a public website with appropriate privacy protections:
+- Citizens can view and comment on applications
+- Read existing comments and consultee responses
+- Track application progress
+
+### Planning APIs
+Provide machine-readable planning data to third parties:
+- PropTech companies building planning tools
+- Research organizations analyzing planning decisions
+- Civic tech projects improving planning transparency
+
+### Open Data Publishing
+Contribute to open data initiatives:
+- National planning data platform
+- Local authority data portals
+- Planning statistics and analytics
+
+## JSON Schema
+
+The complete JSON Schema definition is available at:
+
+```
+https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/postSubmissionPublishedApplication.json
+```
+
+<Info>
+  Local planning authorities remain responsible for ensuring compliance with data protection legislation when using this schema. The redaction approach should be reviewed by data protection officers.
+</Info>
+
+## Related Schemas
+
+<CardGroup cols={2}>
+  <Card title="PostSubmissionApplication" href="/schemas/post-submission-application">
+    Full schema with complete data
+  </Card>
+  
+  <Card title="PrototypeApplication" href="/schemas/prototype-application">
+    Original application schema
+  </Card>
+</CardGroup>

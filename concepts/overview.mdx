@@ -1,0 +1,277 @@
+---
+title: Schema System Overview
+description: Understanding the Digital Planning Data Schemas architecture and structure
+---
+
+## What are Digital Planning Data Schemas?
+
+Digital Planning Data schemas are JSON Schema specifications that define standardized data structures for planning applications in England. They aim to encourage interoperability and consistency between digital planning systems by providing a central, version-controlled specification for documenting and validating planning data.
+
+## Purpose
+
+The schemas serve several key purposes:
+
+- **Standardization**: Create a common language for planning data across different systems
+- **Validation**: Ensure data integrity through formal validation rules
+- **Interoperability**: Enable different planning systems to exchange data reliably
+- **Documentation**: Provide clear, machine-readable documentation of expected data structures
+- **Version Control**: Track changes to data specifications over time
+
+## Architecture
+
+The schema system is built using a TypeScript-first approach:
+
+```typescript
+// TypeScript interfaces define the structure
+export interface Application {
+  data: {
+    application: ApplicationData;
+    user: User;
+    applicant: Applicant;
+    property: Property;
+    proposal: Proposal;
+    files?: FilesAsData;
+  };
+  preAssessment?: PreAssessment;
+  responses: Responses;
+  files: File[];
+  metadata: Metadata;
+}
+```
+
+These TypeScript interfaces are then automatically converted to JSON Schema using `ts-json-schema-generator`:
+
+```bash
+pnpm ts-json-schema-generator \
+  --path "types/schemas/${dir}/*.ts" \
+  --out "schemas/${dir}.json" \
+  --type "$type" \
+  --no-top-ref
+```
+
+## Repository Structure
+
+<CodeGroup>
+```plaintext Repository Layout
+/schemas/
+  application.json              # Main application schema
+  prototypeApplication.json     # Prototype (pre-submission) schema
+  preApplication.json           # Pre-application schema
+  postSubmissionApplication.json # Post-submission schema
+  enforcement.json              # Enforcement report schema
+
+/types/
+  /schemas/                     # TypeScript type definitions
+    /application/
+    /prototypeApplication/
+    /preApplication/
+    /postSubmissionApplication/
+    /enforcement/
+  /shared/                      # Shared types across schemas
+    User.ts
+    Responses.ts
+    Metadata.ts
+    Addresses.ts
+    ...
+
+/examples/
+  /application/                 # Example JSON files
+  /prototypeApplication/
+    /planningPermission/
+      fullHouseholder.json
+      major.json
+      minor.json
+    /priorApproval/
+    /lawfulDevelopmentCertificate/
+    ...
+
+/tests/
+  usage.test.ts                 # Validation tests
+```
+</CodeGroup>
+
+## Key Components
+
+### 1. Data Structure
+
+Every application follows a consistent top-level structure:
+
+```typescript
+interface ApplicationStructure {
+  // Application-specific data
+  data: {...};
+  
+  // Question/answer pairs from the digital service
+  responses: Responses;
+  
+  // Uploaded files
+  files: File[];
+  
+  // Metadata about the submission
+  metadata: Metadata;
+}
+```
+
+### 2. Shared Types
+
+Common data structures are defined in `/types/shared/` and reused across schemas:
+
+- **User**: User role and authentication data
+- **Responses**: Question and answer metadata
+- **Addresses**: UK address structures
+- **Boundaries**: GeoJSON boundary definitions
+- **Metadata**: Service and submission metadata
+
+### 3. Schema Lifecycle
+
+<Steps>
+  <Step title="Define TypeScript Types">
+    Create or modify TypeScript interfaces in `/types/schemas/`
+  </Step>
+  
+  <Step title="Generate JSON Schema">
+    Run `pnpm build` to generate JSON Schema files in `/schemas/`
+  </Step>
+  
+  <Step title="Create Examples">
+    Add TypeScript examples in `/examples/` and run `pnpm build-json-examples`
+  </Step>
+  
+  <Step title="Validate">
+    Run `pnpm test` to validate examples against schemas
+  </Step>
+  
+  <Step title="Publish">
+    Merge to main branch triggers automatic publication to GitHub Pages
+  </Step>
+</Steps>
+
+## Usage Options
+
+There are multiple ways to integrate with the schemas:
+
+<CardGroup cols={3}>
+  <Card title="Direct Reference" icon="link">
+    Reference hosted schema files directly from GitHub Pages:
+    ```
+    https://theopensystemslab.github.io/
+    digital-planning-data-schemas/
+    <VERSION>/schemas/<SCHEMA>.json
+    ```
+  </Card>
+  
+  <Card title="Clone Repository" icon="download">
+    Clone the repository and reference local schema files programmatically
+  </Card>
+  
+  <Card title="Install Package" icon="box">
+    Build and install as a local npm package:
+    ```bash
+    pnpm package
+    npm install digital-planning-data-schemas-{version}.tgz
+    ```
+  </Card>
+</CardGroup>
+
+## Example: Using TypeScript Types
+
+When installed as a package, you can import TypeScript types directly:
+
+```typescript
+import type { CommentType } from 'digital-planning-data-schemas/types/schemas/postSubmissionApplication/enums/CommentType';
+import type { PrototypeApplication } from 'digital-planning-data-schemas/types/schemas/prototypeApplication';
+import type { Application } from 'digital-planning-data-schemas/types/schemas/application';
+
+// Use the types in your application
+const myApplication: Application = {
+  data: {
+    application: {...},
+    user: {...},
+    applicant: {...},
+    property: {...},
+    proposal: {...}
+  },
+  responses: [...],
+  files: [...],
+  metadata: {...}
+};
+```
+
+## Metadata System
+
+All applications include metadata describing:
+
+```typescript
+interface BaseMetadata {
+  // Local authority code from planning.data.gov.uk
+  organisation: string;
+  
+  // Unique application identifier
+  id: UUID;
+  
+  // Submission timestamp
+  submittedAt: DateTime;
+  
+  // Schema version used
+  schema: URL;
+}
+```
+
+Service-specific metadata extends this base:
+
+```typescript
+interface PlanXMetadata extends BaseMetadata {
+  source: 'PlanX';
+  service: {
+    flowId: UUID;
+    url: URL;
+    files: RequestedFiles;
+    fee: FeeExplanation;
+  };
+}
+```
+
+## Responses Structure
+
+The `responses` field captures the user's journey through the digital service:
+
+```typescript
+type Responses = QuestionAndResponses[];
+
+interface QuestionAndResponses {
+  question: string;
+  responses: Array<Response> | string;
+  metadata?: QuestionMetaData;
+}
+
+interface Response {
+  value: string;
+  metadata?: ResponseMetaData;
+}
+```
+
+This preserves the complete context of user decisions and answers.
+
+## Version Management
+
+Schemas are versioned and published:
+
+- **`@next`**: Main branch, latest development version
+- **Semantic versions**: Released versions (e.g., `0.7.7`) on the `dist` branch
+- **Published URL pattern**: `https://theopensystemslab.github.io/digital-planning-data-schemas/{VERSION}/schemas/{SCHEMA}.json`
+
+<Note>
+  The `package.json` version determines the release version. Incrementing this version and merging to main triggers automatic publication.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Schema Types" href="/concepts/schema-types" icon="shapes">
+    Learn about the different schema types available
+  </Card>
+  
+  <Card title="Validation" href="/concepts/validation" icon="check">
+    Understand how to validate data against schemas
+  </Card>
+</CardGroup>

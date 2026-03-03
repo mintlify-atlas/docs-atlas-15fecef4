@@ -1,0 +1,200 @@
+---
+title: API Response Structure
+description: Standard response format for all API endpoints
+---
+
+## Standard Response Format
+
+All API endpoints follow a consistent response structure to ensure predictable data handling:
+
+```typescript
+export interface ApiResponse<T> {
+  data: T | null;
+  pagination?: Pagination | CursorPagination;
+  status?: {
+    code: number;
+    message: string;
+    detail?: string;
+  };
+}
+```
+
+## Response Fields
+
+<ResponseField name="data" type="T | null">
+  The actual data being returned. Will be `null` if the request failed or no data is available.
+</ResponseField>
+
+<ResponseField name="pagination" type="Pagination | CursorPagination">
+  Optional pagination metadata. Present only on list endpoints that support pagination.
+  
+  Can be either:
+  - **Offset pagination** (recommended for most cases)
+  - **Cursor-based pagination** (for large datasets)
+</ResponseField>
+
+<ResponseField name="status" type="object">
+  HTTP status information
+  
+  <Expandable title="properties">
+    <ResponseField name="code" type="number" required>
+      HTTP status code (e.g., 200, 400, 404)
+    </ResponseField>
+    
+    <ResponseField name="message" type="string" required>
+      Human-readable status message
+    </ResponseField>
+    
+    <ResponseField name="detail" type="string">
+      Optional detailed error information
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Success Response Example
+
+```json
+{
+  "data": {
+    "applicationType": "planningPermission",
+    "data": {
+      "application": {
+        "reference": "ABC-2024-001",
+        "stage": "consultation",
+        "status": "undetermined"
+      }
+    }
+  },
+  "pagination": {
+    "resultsPerPage": 10,
+    "currentPage": 1,
+    "totalPages": 5,
+    "totalResults": 47,
+    "totalAvailableItems": 1234
+  },
+  "status": {
+    "code": 200,
+    "message": "OK"
+  }
+}
+```
+
+## Error Response Examples
+
+### 400 Bad Request
+
+```json
+{
+  "data": null,
+  "status": {
+    "code": 400,
+    "message": "Bad Request",
+    "detail": "Invalid query parameter: sortBy must be one of [publishedAt, receivedAt]"
+  }
+}
+```
+
+### 404 Not Found
+
+```json
+{
+  "data": null,
+  "status": {
+    "code": 404,
+    "message": "Not Found",
+    "detail": "Application with ID 'ABC-2024-999' not found"
+  }
+}
+```
+
+### 422 Unprocessable Entity
+
+```json
+{
+  "data": null,
+  "status": {
+    "code": 422,
+    "message": "Unprocessable Entity",
+    "detail": "receivedAtFrom requires receivedAtTo to be specified"
+  }
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "data": null,
+  "status": {
+    "code": 500,
+    "message": "Internal Server Error"
+  }
+}
+```
+
+## HTTP Status Codes
+
+The API uses standard HTTP status codes:
+
+| Code | Description | When Used |
+| --- | --- | --- |
+| **200** | OK | Request successful |
+| **400** | Bad Request | Invalid request parameters |
+| **404** | Not Found | Resource doesn't exist |
+| **422** | Unprocessable Entity | Valid syntax but semantic errors |
+| **500** | Internal Server Error | Server-side error |
+
+## Content Type
+
+All responses use JSON format:
+
+```
+Content-Type: application/json
+```
+
+## Data Types
+
+The `data` field type varies by endpoint:
+
+### Single Resource
+
+For endpoints returning a single item:
+
+```typescript
+ApiResponse<PostSubmissionApplication>
+```
+
+### Collection of Resources
+
+For endpoints returning multiple items:
+
+```typescript
+ApiResponse<PostSubmissionApplication[]>
+ApiResponse<PostSubmissionFile[]>
+ApiResponse<PublicComment[]>
+```
+
+### Empty Success Response
+
+For POST endpoints that don't return data:
+
+```json
+{
+  "data": null,
+  "status": {
+    "code": 200,
+    "message": "OK"
+  }
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Pagination" icon="arrows-repeat" href="/api/pagination">
+    Learn about pagination metadata
+  </Card>
+  <Card title="Endpoints" icon="route" href="/api/endpoints">
+    Explore specific endpoint responses
+  </Card>
+</CardGroup>

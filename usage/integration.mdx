@@ -1,0 +1,222 @@
+---
+title: Integration Methods
+description: Learn how to integrate Digital Planning Data schemas into your application
+---
+
+## Overview
+
+There are three main approaches to integrate Digital Planning Data schemas into your application, each suited for different use cases and development workflows.
+
+## Integration Options
+
+<Tabs>
+  <Tab title="Hosted Schema">
+    ### Reference Hosted Schema Files
+
+    The simplest integration method is to reference the hosted schema files directly. This approach requires no installation and always points to a specific version.
+
+    ```typescript
+    const schemaUrl = `https://theopensystemslab.github.io/digital-planning-data-schemas/<VERSION>/schemas/<SCHEMA>.json`;
+    ```
+
+    **Example: Fetching the Application Schema**
+
+    ```javascript
+    // Fetch the latest application schema
+    const response = await fetch(
+      'https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/application.json'
+    );
+    const applicationSchema = await response.json();
+    ```
+
+    **Available Schemas:**
+    - `application.json` - Full planning applications
+    - `preApplication.json` - Pre-application submissions
+    - `prototypeApplication.json` - Prototype applications
+    - `postSubmissionApplication.json` - Post-submission data
+    - `postSubmissionPublishedApplication.json` - Published applications
+    - `enforcement.json` - Enforcement cases
+
+    <Note>
+      Replace `<VERSION>` with a specific version number or use `@next` for the latest development version.
+    </Note>
+  </Tab>
+
+  <Tab title="Clone Repository">
+    ### Clone and Reference Locally
+
+    For development environments or when you need offline access, clone the repository and reference schemas locally.
+
+    ```bash
+    git clone https://github.com/theopensystemslab/digital-planning-data-schemas.git
+    cd digital-planning-data-schemas
+    pnpm install
+    ```
+
+    Then reference schemas programmatically in your code:
+
+    ```typescript
+    import applicationSchema from './digital-planning-data-schemas/schemas/application.json';
+    import {Application} from './digital-planning-data-schemas/types/schemas/application';
+
+    // Use the schema for validation
+    function validateApplication(data: unknown): data is Application {
+      // Your validation logic here
+      return true;
+    }
+    ```
+
+    **Benefits:**
+    - Full access to TypeScript types
+    - Offline development capability
+    - Direct control over version updates
+    - Access to examples and tests
+  </Tab>
+
+  <Tab title="NPM Package">
+    ### Install as NPM Package
+
+    For production applications, install the schemas as a local package. This approach provides the best integration with TypeScript projects.
+
+    <Steps>
+      <Step title="Build the package">
+        In the schemas repository:
+
+        ```bash
+        pnpm package
+        ```
+
+        This creates a file named `digital-planning-data-schemas-{version}.tgz`.
+      </Step>
+
+      <Step title="Copy to your project">
+        Copy the `.tgz` file to your project directory:
+
+        ```bash
+        cp digital-planning-data-schemas-0.7.7.tgz /path/to/your/project/
+        ```
+      </Step>
+
+      <Step title="Install the package">
+        Install using npm or add to `package.json`:
+
+        **Option 1: NPM Install**
+        ```bash
+        npm install digital-planning-data-schemas-0.7.7.tgz
+        ```
+
+        **Option 2: package.json**
+        ```json
+        {
+          "dependencies": {
+            "digital-planning-data-schemas": "file:digital-planning-data-schemas-0.7.7.tgz"
+          }
+        }
+        ```
+
+        Then run:
+        ```bash
+        npm install
+        ```
+      </Step>
+
+      <Step title="Import and use">
+        Import TypeScript types and schemas:
+
+        ```typescript
+        // Import types
+        import type {Application} from 'digital-planning-data-schemas/types/schemas/application';
+        import type {CommentType} from 'digital-planning-data-schemas/types/schemas/postSubmissionApplication/enums/CommentType';
+
+        // Import schemas
+        import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+        // Import examples
+        import exampleData from 'digital-planning-data-schemas/examples/application/planningPermission/fullHouseholder.json';
+        ```
+      </Step>
+    </Steps>
+
+    **Package Exports:**
+    ```json
+    {
+      "exports": {
+        "./types/*": "./types/*",
+        "./schemas/*": "./schemas/*",
+        "./examples/*": "./examples/*"
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Version Management
+
+The schemas follow semantic versioning. The repository structure maintains versions:
+
+- **`main` branch**: Reflects the `@next` version (development)
+- **`dist` branch**: Contains released versions with documentation
+- **GitHub Releases**: Tagged versions available at specific URLs
+
+```typescript
+// Use a specific version
+const v0_7_7 = 'https://theopensystemslab.github.io/digital-planning-data-schemas/0.7.7/schemas/application.json';
+
+// Use the latest development version
+const latest = 'https://theopensystemslab.github.io/digital-planning-data-schemas/@next/schemas/application.json';
+```
+
+## Schema Validation Libraries
+
+The schemas are JSON Schema Draft 07 compliant and work with standard validation libraries:
+
+<CodeGroup>
+```typescript AJV
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+// Initialize AJV with format support
+const ajv = addFormats(new Ajv({allowUnionTypes: true}));
+const validate = ajv.compile(applicationSchema);
+
+// Validate data
+const isValid = validate(applicationData);
+if (!isValid) {
+  console.error(validate.errors);
+}
+```
+
+```typescript jsonschema
+import {Validator, Schema} from 'jsonschema';
+import applicationSchema from 'digital-planning-data-schemas/schemas/application.json';
+
+const validator = new Validator();
+const result = validator.validate(applicationData, applicationSchema as Schema);
+
+if (result.errors.length > 0) {
+  console.error(result.errors);
+}
+```
+</CodeGroup>
+
+<Note>
+  When using AJV, remember to include `ajv-formats` for proper validation of email, date-time, UUID, and other format types used in the schemas.
+</Note>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Validation Patterns" icon="check-circle" href="/usage/validation">
+    Learn how to validate data against the schemas
+  </Card>
+  <Card title="TypeScript Types" icon="code" href="/usage/typescript-types">
+    Discover how to use TypeScript types effectively
+  </Card>
+  <Card title="Examples" icon="folder-open" href="/usage/examples">
+    Explore real-world implementation examples
+  </Card>
+  <Card title="API Implementation" icon="server" href="/api/overview">
+    Guidelines for implementing schemas in APIs
+  </Card>
+</CardGroup>

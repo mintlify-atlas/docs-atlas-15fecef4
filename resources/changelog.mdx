@@ -1,0 +1,111 @@
+---
+title: Changelog
+description: Version history and notable changes to the Digital Planning Data schemas
+---
+
+All notable changes to this project are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+<Note>
+  Version 0 of Semantic Versioning is handled differently from version 1 and above. The minor version will be incremented upon a breaking change and the patch version will be incremented for features.
+</Note>
+
+## [0.7.7] - 2026-02-25
+
+### Added
+
+- Adds two new possible planning designation enum values: `buildingPreservationNotice` and `certificateOfImmunity` ([#392](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/392))
+- Adds two new site boundary additions: `localPlanningAuthority` and `developmentCorporations` ([#392](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/392))
+- Adds metadata about any AI-enhanced components used in the service when applicable ([#392](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/392))
+- Adds more granular fee breakdowns and Gov Pay metadata when applicable ([#392](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/392), [#394](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/394))
+- Adds user-defined drawing number when applicable to an uploaded file ([#392](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/392))
+
+## [0.7.6] - 2025-10-23
+
+### Added
+
+- Adds optional properties `id` and `tags` to question metadata across all schemas which include `responses` ([#383](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/383))
+- Adds file type `biodivertyNetGainInformation` to capture BNG requirements ([#383](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/383))
+
+### Changed
+
+- `data.report.boundary` in the `Enforcement` schema is optional, rather than required, as not all users will provide this digitally ([#383](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/383))
+- `siteContact` is optional, rather than required, for `PreApplication` as not all councils are consistently asking for this ([#383](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/383))
+- `Application` type `confirmationCompliance` has simplified `data.applicant` requirements ([#383](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/383))
+
+## [0.7.5] - 2025-05-29
+
+### Added
+
+- Adds "wards" to structured `property` data across all schemas, sourced from Planning Data ([#353](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/353))
+- Adds a work-in-progress `Enforcement` schema, including example payloads ([#354](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/354))
+
+## [0.7.4] - 2025-04-28
+
+### Added
+
+- Addition of "Historic battlefields" to `PlanningDesignations` enum ([#334](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/334))
+
+### Changed
+
+- `ProjectTypes` enum values tidied up to remove duplicates and better align to GDPO classes ([#332](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/332), [#335](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/335))
+- `Materials` properties now account for Listed Building Consent variances ([#331](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/331))
+
+## [0.7.3] - 2025-02-27
+
+### Added
+
+- `CommunityInfrastructureLevy` now includes all details collected by Form 1: Additional information ([#312](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/312))
+- `PlanningDesignations` enum includes more datasets which may be incorporated into services soon based on Planning Data's backlog ([#311](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/311))
+
+### Changed
+
+- Minor type changes to `Ownership` definitions to better align to PlanX service content ([#313](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/313))
+- Renames `treePlan` document to `treeSurvey` ([#309](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/309))
+- Adjusts linked pre-application reference requirements ([#298](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/298))
+
+## [0.7.2] - 2025-01-16
+
+### Changed
+
+- Updates `CommunityInfrastructureLevy` type to include "Not liable" path ([#282](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/282))
+- Updates `Flags` enum values ([#285](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/285))
+- Updates `PlanningDesignation` enum values ([#286](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/286))
+- Updates `PropertyTypes` enum values ([#287](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/287))
+
+### Added
+
+- Adds a work-in-progress `PreApplication` schema, including example payloads ([#275](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/275))
+
+## [0.7.1] - 2024-11-07
+
+### Added
+
+- Explicit support for address ranges ([#248](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/248))
+- Additional application types synced to PlanX service development - notably `ldc.listedBuildingWorks` and `approval.conditions` ([#197](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/197))
+
+## [0.7.0] - 2024-07-12
+
+### Breaking
+
+- Updated `ApplicationTypes`, `ProjectTypes` and `FileTypes` based on ODP Service development across whole planning application ecosystem ([#201](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/201), [#200](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/200), [#198](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/198), [#197](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/197), [#182](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/182), [#177](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/177), [#176](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/176))
+
+### Added
+
+- Added new example payloads and their associated types, now organised in subdirectories by application type ([#183](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/183)):
+  - Minor planning permission ([#193](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/193))
+  - Major planning permission ([#194](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/194))
+  - Prior approvals (5 types) ([#195](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/195), [#186](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/186))
+  - Land Drainage Consent ([#187](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/187))
+- Added type definitions for Greater London Authority reporting requirements, like residential units etc ([#192](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/192), [#179](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/179), [#178](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/178))
+- Added type definitions for "documents submitted as data" (not yet represented in example payloads) ([#180](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/180))
+
+### Changed
+
+- Tightened type defintion for planning desigation "entities" ([#196](https://github.com/theopensystemslab/digital-planning-data-schemas/pull/196))
+- Upgraded a number of technical dependencies via Dependabot
+
+## Earlier Versions
+
+For the complete changelog including versions 0.6.0 and earlier, please visit the [GitHub repository](https://github.com/theopensystemslab/digital-planning-data-schemas/blob/main/CHANGELOG.md).
