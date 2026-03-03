@@ -377,6 +377,190 @@ export type ResultFlag = {
   </Accordion>
 </AccordionGroup>
 
+## Post-Submission Application Enums
+
+The following enums are specific to the PostSubmissionApplication schema for tracking applications through the back office system.
+
+### Application Status
+
+Tracks the overall status of an application.
+
+```typescript
+export type ApplicationStatus = 
+  | 'returned'    // Invalid application returned to applicant
+  | 'withdrawn'   // Withdrawn by applicant before decision
+  | 'determined'  // Decision made (even if appeal pending)
+  | 'undetermined'; // No decision yet (may be in validation/consultation)
+```
+
+| Value | Description |
+|-------|-------------|
+| `returned` | Application is invalid and has been returned |
+| `withdrawn` | Application withdrawn by applicant anytime before decision |
+| `determined` | Application has a decision, even if appeal is pending |
+| `undetermined` | Application has no decision yet |
+
+### Process Stage
+
+Defines the stage of the planning application process.
+
+```typescript
+export type ProcessStage = 
+  | 'submission'      // Initial submission
+  | 'validation'      // Validation by planning authority
+  | 'consultation'    // Public consultation period
+  | 'assessment'      // Officer assessment (regardless of decision status)
+  | 'appeal'          // Appeal lodged
+  | 'highCourtAppeal'; // High court appeal
+```
+
+| Stage | Description |
+|-------|-------------|
+| `submission` | Application has been submitted |
+| `validation` | Being validated by planning authority |
+| `consultation` | Public consultation period |
+| `assessment` | Under officer assessment |
+| `appeal` | Appeal has been lodged |
+| `highCourtAppeal` | High court appeal in progress |
+
+### Assessment Decision
+
+The planning officer or committee decision outcome.
+
+```typescript
+export type AssessmentDecision = 'granted' | 'refused';
+```
+
+| Decision | Description |
+|----------|-------------|
+| `granted` | Application approved |
+| `refused` | Application rejected |
+
+### Appeal Decision
+
+Outcome of a planning appeal.
+
+```typescript
+export type AppealDecision = 
+  | 'allowed'        // Appeal granted
+  | 'dismissed'      // Appeal rejected
+  | 'splitDecision'  // Partial approval
+  | 'withdrawn';     // Appeal withdrawn
+```
+
+| Decision | Description |
+|----------|-------------|
+| `allowed` | Appeal was successful |
+| `dismissed` | Appeal was rejected |
+| `splitDecision` | Partial approval granted |
+| `withdrawn` | Appeal withdrawn by appellant |
+
+### Comment Types
+
+Distinguishes between public and specialist comments.
+
+```typescript
+export type CommentType = 'specialist' | 'public';
+```
+
+| Type | Description |
+|------|-------------|
+| `specialist` | Comment from a statutory consultee or specialist |
+| `public` | Comment from a member of the public |
+
+### Comment Sentiment
+
+#### Public Comment Sentiment
+
+```typescript
+export type PublicCommentSentiment = 'objection' | 'neutral' | 'supportive';
+```
+
+| Sentiment | Description |
+|-----------|-------------|
+| `objection` | Objects to the application |
+| `neutral` | Neutral or informational comment |
+| `supportive` | Supports the application |
+
+#### Specialist Comment Sentiment
+
+```typescript
+export type SpecialistCommentSentiment = 
+  | 'approved'         // Specialist approves
+  | 'amendmentsNeeded' // Amendments required
+  | 'objected';        // Specialist objects
+```
+
+| Sentiment | Description |
+|-----------|-------------|
+| `approved` | Specialist approves the application |
+| `amendmentsNeeded` | Amendments needed before approval |
+| `objected` | Specialist objects to the application |
+
+## Enforcement Breach Types
+
+The `BreachTypes` enum defines types of planning breaches that can be reported.
+
+### Type Definition
+
+```typescript
+export type BreachType = {
+  value: BreachTypeKeys;
+  description: string;
+};
+```
+
+### Breach Categories
+
+<AccordionGroup>
+  <Accordion title="Alterations">
+    | Key | Description |
+    |-----|-------------|
+    | `alter` | Alteration |
+    | `alter.boundary` | New or modified boundary fence or wall |
+    | `alter.equipment.antennae` | Microwave antennas or satellite dishes |
+    | `alter.highways` | Creation of a new access (eg a dropped kerb) |
+    | `alter.landscape` | Change of land levels |
+    | `alter.openings` | Works to windows or doors |
+    | `alter.roof` | Changes to roof including skylights |
+    | `alter.soilPipes` | Chimney flue or soil and vent pipes |
+    | `alter.surfaces.parking` | Creation of driveway or laying of hardstanding |
+    | `alter.swimmingPool` | New or modified swimming pool |
+  </Accordion>
+
+  <Accordion title="Works to Trees">
+    | Key | Description |
+    |-----|-------------|
+    | `alter.trees` | Works to trees |
+    | `alter.trees.tree` | Works to a dangerous or dead tree |
+    | `alter.trees.tree.other` | Other works to a tree |
+    | `alter.trees.tree.prune` | Works to a healthy tree |
+    | `alter.trees.tree.remove` | Felling of a tree |
+  </Accordion>
+
+  <Accordion title="Extensions & Outbuildings">
+    | Key | Description |
+    |-----|-------------|
+    | `extend` | Extension |
+    | `extend.porch` | New or modified porch |
+    | `extend.roof.dormer` | Inserting a dormer window |
+    | `outbuilding` | New or modified outbuilding (eg garage or shed) |
+  </Accordion>
+
+  <Accordion title="Change of Use & Other">
+    | Key | Description |
+    |-----|-------------|
+    | `changeOfUse` | Unauthorised change of use |
+    | `changeOfUse.caravans` | Caravan or mobile homes |
+    | `listed` | Works to a listed building |
+    | `minerals` | Minerals and waste development |
+    | `planningCondition` | Breach of a planning condition |
+    | `signage` | New adverts or signage (including flags) |
+    | `untidySite` | Untidy land |
+    | `other` | Other type of planning breach |
+  </Accordion>
+</AccordionGroup>
+
 ## Related Documentation
 
 - [ApplicationTypes](/reference/application-types) - Complete application type reference
